@@ -14,7 +14,7 @@ Item {
 
     ScrollView {
         clip: true
-        background: Rectangle { color: themeManager.backgroundDark }
+        background: Rectangle { color: appTheme.backgroundDark }
 
         GridLayout {
             width: Math.max(parent.width, 1200) // حداقل عرض برای نمایش بهتر

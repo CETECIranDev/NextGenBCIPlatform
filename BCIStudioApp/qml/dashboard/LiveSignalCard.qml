@@ -36,8 +36,8 @@ DashboardCard {
     property int dataPointsPerChannel: Math.floor(samplingRate * timeWindow)
     property real updateInterval: 1000 / 60 // 60 FPS
 
-    ColumnLayout {
-        anchors.fill: parent
+    content: ColumnLayout {
+        id: mainLayout
         spacing: 12
 
         // Control Panel
@@ -196,7 +196,6 @@ DashboardCard {
                         if (i === 0) {
                             ctx.moveTo(x, y)
                         } else {
-                            // Smooth line drawing with interpolation
                             ctx.lineTo(x, y)
                         }
                     }
@@ -238,7 +237,6 @@ DashboardCard {
                 cursorShape: Qt.PointingHandCursor
 
                 onClicked: {
-                    // Channel selection logic could be added here
                     console.log("Signal area clicked at:", mouseX, mouseY)
                 }
             }
@@ -313,7 +311,7 @@ DashboardCard {
         for (var i = 0; i < 8; i++) {
             var initialData = []
             for (var j = 0; j < dataPoints; j++) {
-                initialData.push(0) // Start with zeros
+                initialData.push(0)
             }
             channels.push({
                 name: channelNames[i],
@@ -331,11 +329,9 @@ DashboardCard {
             var channel = channelData[i]
             var newDataPoint = generateEEGDataPoint(i, advancedSignalCard.currentTime)
 
-            // Shift data array and add new point
             channel.data.shift()
             channel.data.push(newDataPoint)
 
-            // Update signal quality occasionally
             if (Math.random() < 0.01) {
                 channel.quality = Math.max(50, Math.min(100, channel.quality + (Math.random() - 0.5) * 10))
             }
@@ -344,29 +340,27 @@ DashboardCard {
 
     // Generate realistic EEG data point with multiple frequency components
     function generateEEGDataPoint(channelIndex, time) {
-        var t = time / 1000.0 // Convert to seconds
+        var t = time / 1000.0
 
         // Base frequencies for EEG bands
-        var delta = 0.5 * Math.sin(2 * Math.PI * 2 * t) // 2 Hz
-        var theta = 0.3 * Math.sin(2 * Math.PI * 6 * t) // 6 Hz
-        var alpha = 0.4 * Math.sin(2 * Math.PI * 10 * t) // 10 Hz (occipital)
-        var beta = 0.2 * Math.sin(2 * Math.PI * 20 * t) // 20 Hz
-        var gamma = 0.1 * Math.sin(2 * Math.PI * 40 * t) // 40 Hz
+        var delta = 0.5 * Math.sin(2 * Math.PI * 2 * t)
+        var theta = 0.3 * Math.sin(2 * Math.PI * 6 * t)
+        var alpha = 0.4 * Math.sin(2 * Math.PI * 10 * t)
+        var beta = 0.2 * Math.sin(2 * Math.PI * 20 * t)
+        var gamma = 0.1 * Math.sin(2 * Math.PI * 40 * t)
 
         // Channel-specific characteristics
         var channelFactor = 1.0
         if (channelNames[channelIndex].includes('O')) {
-            // Occipital channels have stronger alpha
             alpha *= 1.5
         } else if (channelNames[channelIndex].includes('C')) {
-            // Central channels have stronger beta
             beta *= 1.3
         }
 
         // Add some random noise
         var noise = (Math.random() - 0.5) * 0.1 * channelData[channelIndex].noiseLevel
 
-        // Combine components with some artifacts
+        // Combine components
         var value = delta + theta + alpha + beta + gamma + noise
 
         // Occasionally add blink artifacts (for frontal channels)
@@ -426,4 +420,3 @@ DashboardCard {
         }
     }
 }
-

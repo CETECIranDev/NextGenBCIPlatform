@@ -30,6 +30,7 @@ qt_add_executable(BCIStudioApp
     src/AppController.cpp
     src/MainWindow.cpp
     qml/dashboard/CognitiveGauge_copy.qml
+    qml/SplashScreen_copy.qml
 )
 
 # لینک کتابخانه‌ها
@@ -114,6 +115,8 @@ qt_add_resources(BCIStudioApp "qml_resources"
         qml/common/GlassCard.qml
         qml/common/IconButton.qml
         qml/common/FlatButton.qml
+        qml/common/GlassButton.qml
+        qml/common/RecordButton.qml
 
         qml/models/DashboardModel.qml
 
@@ -157,6 +160,12 @@ qt_add_resources(BCIStudioApp "qml_resources"
 
 
 
+        qml/SplashScreen.qml
+        qml/AdvancedLoadingIndicator.qml
+        qml/BrainLogo.qml
+        qml/StatusItem.qml
+        qml/TypeWriterText.qml
+        qml/NeuralNetworkBackground.qml
 
 
 

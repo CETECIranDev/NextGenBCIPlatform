@@ -100,6 +100,7 @@ Rectangle {
                             description: "Visual evoked potential for character spelling interface"
                             icon: "🔤"
                             color: "#7C4DFF"
+                            opacity: 0.4
                             stats: "6×6 Grid • 92% Accuracy"
                             status: "Ready"
                             statusColor: "#00C853"
@@ -113,6 +114,7 @@ Rectangle {
                             description: "Steady-state visual evoked potential for frequency control"
                             icon: "📊"
                             color: "#00BFA5"
+
                             stats: "4 Frequencies • 85% Detection"
                             status: "Calibrated"
                             statusColor: "#00C853"

@@ -20,6 +20,11 @@ ApplicationWindow {
     visible: true
     title: "BCI Studio Pro - Advanced BCI Platform"
 
+    // اضافه کردن property برای مدیریت splash
+    property bool splashVisible: true
+    property int splashDuration: 12000 // 12 ثانیه
+
+
     // تنظیمات پنجره برای fullscreen و حذف نوار پیش‌فرض
     flags: Qt.Window | Qt.FramelessWindowHint
     visibility: Window.FullScreen
@@ -34,6 +39,13 @@ ApplicationWindow {
             //themeTransition.to = theme.backgroundPrimary
             //themeTransition.start()
             theme = appTheme.theme
+            mainWindow.color = theme.backgroundPrimary
+            // به‌روزرسانی theme اصلی
+           mainWindow.theme = appTheme.theme
+
+           // فورس به‌روزرسانی رنگ پنجره
+           mainWindow.color = appTheme.theme.backgroundPrimary
+
 
         }
     }
@@ -480,16 +492,17 @@ ApplicationWindow {
     }
 
     // Splash Screen برای اولین اجرا
-    SplashScreen {
-        id: splashScreen
-        anchors.fill: parent
-        visible: true
-        onFinished: {
-            if (appController) {
-                appController.hideSplash()
-            }
-        }
-    }
+       SplashScreen {
+           id: splashScreen
+           anchors.fill: parent
+           visible: splashVisible
+           onFinished: {
+               splashVisible = false
+               if (appController) {
+                   appController.hideSplash()
+               }
+           }
+       }
 
     // Dialog برای پروژه جدید
     NewProjectDialog {
@@ -893,7 +906,7 @@ ApplicationWindow {
 
     Timer {
         id: splashScreenTimer
-        interval: 2000
+        interval: 8000
         onTriggered: {
             if (appController) {
                 appController.hideSplash()

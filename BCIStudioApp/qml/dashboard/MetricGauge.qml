@@ -10,12 +10,12 @@ Rectangle {
     property string title: ""
     property real value: 0
     property string unit: ""
-    property color color: theme.primary
+    property color metricColor: theme.primary
     property string icon: ""
     property string trend: ""
 
-    color: Qt.rgba(color.r, color.g, color.b, 0.1)
-    border.color: Qt.rgba(color.r, color.g, color.b, 0.3)
+    color: Qt.rgba(metricColor.r, metricColor.g, metricColor.b, 0.1)
+    border.color: Qt.rgba(metricColor.r, metricColor.g, metricColor.b, 0.3)
     border.width: 1
 
     ColumnLayout {
@@ -29,7 +29,7 @@ Rectangle {
             Text {
                 text: icon
                 font.pixelSize: 14
-                color: color
+                color: metricColor
             }
 
             Text {
@@ -42,7 +42,7 @@ Rectangle {
 
             Text {
                 text: trend
-                color: color
+                color: metricColor
                 font.bold: true
                 font.pixelSize: 9
                 visible: trend !== ""
@@ -77,7 +77,7 @@ Rectangle {
                 width: parent.width * (value / 100)
                 height: parent.height
                 radius: parent.radius
-                color: color
+                color: metricColor
 
                 Behavior on width {
                     NumberAnimation { duration: 500; easing.type: Easing.OutCubic }

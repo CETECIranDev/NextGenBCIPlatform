@@ -39,7 +39,7 @@ Rectangle {
         anchors.fill: parent
         radius: 14
         gradient: theme.glassGradient
-        opacity: themeManager.glassOpacity * 0.5
+        opacity: appTheme.glassOpacity * 0.5
     }
 
     ColumnLayout {

@@ -18,7 +18,7 @@ Rectangle {
 
     height: 140
     radius: 12
-    color: "#1A1A2E"
+    color: "transparent"
     border.color: accessCard.color
     border.width: 1
     

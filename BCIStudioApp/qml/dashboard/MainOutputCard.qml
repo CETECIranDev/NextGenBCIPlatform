@@ -13,7 +13,7 @@ DashboardCard {
     badgeText: "LIVE"
     badgeColor: "#FF4081"
     collapsible: true
-    contentMargin: 16
+    //contentMargin: 16
 
     // Properties
     property string currentCommand: "NEUTRAL"
@@ -34,7 +34,7 @@ DashboardCard {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 0
+        spacing: 16
 
         // Command Display Section
         Rectangle {

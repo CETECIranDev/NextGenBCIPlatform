@@ -62,21 +62,21 @@ Rectangle {
             StatusIndicator {
                 label: "EEG Signal"
                 value: "Excellent"
-                color: "#00C853"
+                statColor: "#00C853"
                 icon: "📶"
             }
             
             StatusIndicator {
                 label: "Noise Level"
                 value: "Low"
-                color: "#FFD600"
+                statColor: "#FFD600"
                 icon: "🔇"
             }
             
             StatusIndicator {
                 label: "Connection"
                 value: "Stable"
-                color: "#00C853"
+                statColor: "#00C853"
                 icon: "🔗"
             }
         }

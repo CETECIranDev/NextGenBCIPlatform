@@ -7,22 +7,14 @@ Item {
     id: splashScreen
     anchors.fill: parent
 
+    // تعریف signal با نام درست
     signal finished()
 
+    // رنگ‌های حرفه‌ای Enterprise
     property color primaryColor: "#001F3F"
     property color accentColor: "#00D4AA"
     property color glowColor: "#00B8FF"
     property color textColor: "#FFFFFF"
-
-    // تایمر اصلی با زمان طولانی
-    Timer {
-        id: splashTimer
-        interval: 12000
-        running: true
-        onTriggered: {
-            finished()
-        }
-    }
 
     // گرادیانت پس‌زمینه
     Rectangle {
@@ -38,61 +30,71 @@ Item {
     Image {
         id: brainBackground
         anchors.centerIn: parent
-        width: Math.min(parent.width, parent.height) * 0.7
+        width: Math.min(parent.width, parent.height) * 0.8
         height: width
-        source: "qrc:/images/brain_outline.png"
-        opacity: 0.08
+        source: "qrc:/images/brain_outline.png" // یا مسیر تصویر مغز شما
+        opacity: 0.1 // کم رنگ
         fillMode: Image.PreserveAspectFit
 
-        RotationAnimation on rotation {
-            from: 0
-            to: 360
-            duration: 90000 // حتی آهسته‌تر
-            loops: Animation.Infinite
-            running: true
+        // اگر تصویر ندارید، از شکل SVG استفاده کنید
+        Rectangle {
+            anchors.fill: parent
+            color: "transparent"
+            border.color: "#FFFFFF"
+            border.width: 2
+            opacity: 0.05
+            radius: width / 2
         }
     }
 
-    // شبکه عصبی ملایم
+    // افکت نوری ملایم روی تصویر مغز
+    RadialGradient {
+        anchors.fill: brainBackground
+        source: brainBackground
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "transparent" }
+            GradientStop { position: 0.5; color: "#00000000" }
+            GradientStop { position: 1.0; color: "#2200B8FF" }
+        }
+    }
+
+    // شبکه عصبی ملایم و کم‌تراکم
     NeuralNetworkBackground {
         id: neuralBackground
         anchors.fill: parent
-        nodeCount: 12
-        connectionCount: 30
-        animationDuration: 8000
-        baseOpacity: 0.2
+        nodeCount: 15 // تعداد کمتر
+        connectionCount: 40 // اتصالات کمتر
+        animationDuration: 4000
+        opacity: 0.3 // شفافیت بیشتر
     }
 
     // کانتینر اصلی محتوا
     ColumnLayout {
         anchors.centerIn: parent
-        spacing: 50
+        spacing: 40
         width: parent.width * 0.8
 
         // هدر با لوگو و عنوان
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
-            spacing: 25
+            spacing: 20
 
+            // لوگو مغز مرکزی
             BrainLogo {
                 id: brainLogo
-                Layout.preferredWidth: 150
-                Layout.preferredHeight: 150
+                Layout.preferredWidth: 140
+                Layout.preferredHeight: 140
                 glowEnabled: true
                 animationRunning: true
-                rotationDuration: 30000 // 30 ثانیه برای چرخش کامل
-                brainColor: "#00D4AA"
-                glowColor: "#00B8FF"
-                brainOpacity: 0.9
             }
 
             ColumnLayout {
-                spacing: 15
+                spacing: 12
 
                 Text {
-                    text: "NEURON Operating System"
+                    text: "NEUROSYNC"
                     font.family: "Segoe UI"
-                    font.pixelSize: 56
+                    font.pixelSize: 52
                     font.weight: Font.Light
                     color: textColor
                     Layout.alignment: Qt.AlignHCenter
@@ -100,9 +102,9 @@ Item {
                     layer.enabled: true
                     layer.effect: Glow {
                         color: glowColor
-                        radius: 15
-                        samples: 25
-                        spread: 0.4
+                        radius: 12
+                        samples: 20
+                        spread: 0.3
                     }
                 }
 
@@ -112,7 +114,7 @@ Item {
                     font.pixelSize: 16
                     font.weight: Font.Normal
                     color: accentColor
-                    font.letterSpacing: 4
+                    font.letterSpacing: 3
                     Layout.alignment: Qt.AlignHCenter
                 }
             }
@@ -122,74 +124,64 @@ Item {
         TypeWriterText {
             id: subtitle
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 40
-            text: "Next Generation Brain-Computer Interface Solution"
+            Layout.topMargin: 30
+            text: "Advanced Brain-Computer Interface Solution"
             font.pixelSize: 22
             font.weight: Font.Medium
             color: textColor
-            typingSpeed: 120
-            startDelay: 1500
+            typingSpeed: 80 // سرعت کمتر برای تاثیرگذاری بیشتر
         }
 
-        // نوار پیشرفت
+        // نمایش وضعیت لودینگ پیشرفته
         AdvancedLoadingIndicator {
-            id: loadingIndicator
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 60
-            Layout.preferredWidth: 550
-            Layout.preferredHeight: 8
-            duration: 11500
+            Layout.topMargin: 50
+            Layout.preferredWidth: 500
+            Layout.preferredHeight: 6
         }
 
         // اطلاعات وضعیت سیستم
         GridLayout {
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 50
+            Layout.topMargin: 40
             columns: 2
-            columnSpacing: 60
-            rowSpacing: 25
+            columnSpacing: 50
+            rowSpacing: 20
 
             StatusItem {
-                id: status1
                 label: "NEURAL CONNECTION"
                 value: "ESTABLISHED"
                 status: "success"
                 icon: "🔗"
-                appearDelay: 500
             }
 
             StatusItem {
-                id: status2
                 label: "SIGNAL QUALITY"
                 value: "EXCELLENT"
                 status: "success"
                 icon: "📊"
-                appearDelay: 1500
             }
 
             StatusItem {
-                id: status3
                 label: "DATA STREAM"
                 value: "ACTIVE"
                 status: "processing"
                 icon: "⚡"
-                appearDelay: 2500
             }
 
             StatusItem {
-                id: status4
                 label: "SYSTEM STATUS"
                 value: "OPTIMAL"
                 status: "success"
                 icon: "✅"
-                appearDelay: 3500
             }
         }
 
+        // فوت‌نوت با اطلاعات نسخه
         Text {
             Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 80
-            text: "v2.1.0 | Enterprise Edition | © 2024 CETEC @ . Center of Exellence in Technologies "
+            Layout.topMargin: 60
+            text: "v2.1.0 | Enterprise Edition | © 2024 NeuroSync Technologies"
             font.family: "Segoe UI"
             font.pixelSize: 12
             color: "#8899AA"
@@ -197,12 +189,23 @@ Item {
         }
     }
 
+    // تایمر برای مدیریت زمان نمایش اسپلش اسکرین (زمان بیشتر)
+    Timer {
+        id: splashTimer
+        interval: 10000 // 7 ثانیه به جای 5 ثانیه
+        running: true
+        onTriggered: {
+            finished() // فراخوانی signal
+        }
+    }
+
+    // انیمیشن fade in هنگام شروع
     OpacityAnimator {
         id: fadeInAnimator
         target: splashScreen
         from: 0
         to: 1
-        duration: 2000
+        duration: 8000
         running: true
     }
 }

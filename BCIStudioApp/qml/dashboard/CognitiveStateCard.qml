@@ -1,4 +1,3 @@
-// CognitiveStateCard.qml
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -20,8 +19,7 @@ DashboardCard {
     property real cognitiveLoad: 55
     property real fatigueLevel: 25
 
-    content :ColumnLayout {
-        anchors.fill: parent
+    content: ColumnLayout {
         spacing: 16
 
         // Brain Wave Visualization
@@ -53,7 +51,6 @@ DashboardCard {
                     Text {
                         text: "Brain Wave Activity"
                         color: theme.textPrimary
-
                         font.bold: true
                         font.pixelSize: 12
                     }
@@ -63,9 +60,7 @@ DashboardCard {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         radius: 6
-                        // color: theme.backgroundLight
                         color: "transparent"
-
 
                         Canvas {
                             id: eegCanvas
@@ -77,35 +72,35 @@ DashboardCard {
                             onPaint: {
                                 var ctx = getContext("2d")
                                 ctx.reset()
-                                
+
                                 var width = eegCanvas.width
                                 var height = eegCanvas.height
-                                
+
                                 // Generate sample EEG signal if empty
                                 if (signalData.length === 0) {
                                     for (var i = 0; i < width; i += 2) {
                                         signalData.push(Math.sin(i * 0.1) * 0.5 + Math.random() * 0.3)
                                     }
                                 }
-                                
+
                                 // Draw EEG signal
                                 ctx.strokeStyle = "#9C27B0"
                                 ctx.lineWidth = 1.5
                                 ctx.beginPath()
-                                
+
                                 for (var j = 0; j < signalData.length; j++) {
                                     var x = j
                                     var y = height / 2 + signalData[j] * (height / 2)
-                                    
+
                                     if (j === 0) {
                                         ctx.moveTo(x, y)
                                     } else {
                                         ctx.lineTo(x, y)
                                     }
                                 }
-                                
+
                                 ctx.stroke()
-                                
+
                                 // Update signal data (shift and add new point)
                                 signalData.shift()
                                 signalData.push(Math.sin(Date.now() * 0.01) * 0.5 + Math.random() * 0.3)
@@ -253,11 +248,11 @@ DashboardCard {
         repeat: true
         onTriggered: {
             // Simulate cognitive state changes
-            cognitiveCard.attentionLevel = Math.max(50, Math.min(95, 
+            cognitiveCard.attentionLevel = Math.max(50, Math.min(95,
                 cognitiveCard.attentionLevel + (Math.random() - 0.5) * 10))
-            cognitiveCard.meditationLevel = Math.max(40, Math.min(85, 
+            cognitiveCard.meditationLevel = Math.max(40, Math.min(85,
                 cognitiveCard.meditationLevel + (Math.random() - 0.5) * 8))
-            cognitiveCard.engagementLevel = Math.max(60, Math.min(95, 
+            cognitiveCard.engagementLevel = Math.max(60, Math.min(95,
                 cognitiveCard.engagementLevel + (Math.random() - 0.5) * 12))
         }
     }

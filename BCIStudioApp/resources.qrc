@@ -1,0 +1,98 @@
+<RCC>
+    <qresource prefix="/">
+        <!-- ==================== -->
+        <!-- فایل‌های اصلی QML -->
+        <!-- ==================== -->
+        <file>qml/main.qml</file>
+        <file>qml/SplashScreen.qml</file>
+        
+        <!-- ==================== -->
+        <!-- کامپوننت‌های Core -->
+        <!-- ==================== -->
+        <file>qml/core/NeuroTheme.qml</file>
+        <file>qml/core/NeuroHeader.qml</file>
+        <file>qml/core/NeuroSidebar.qml</file>
+        <file>qml/core/NeuroStatusBar.qml</file>
+        <file>qml/core/NeuroButton.qml</file>
+        <file>qml/core/SidebarItem.qml</file>
+		
+        
+        <!-- ==================== -->
+        <!-- صفحه اصلی (Home) -->
+        <!-- ==================== -->
+        <file>qml/home/HomeScreen.qml</file>
+        <file>qml/home/WelcomeCard.qml</file>
+        <file>qml/home/StatBadge.qml</file>
+        <file>qml/home/QuickActionsGrid.qml</file>
+        <file>qml/home/ActionCard.qml</file>
+        <file>qml/home/RecentProjectsCard.qml</file>
+        <file>qml/home/ProjectItem.qml</file>
+        <file>qml/home/SystemStatusCard.qml</file>
+        <file>qml/home/StatusIndicator.qml</file>
+        
+        <!-- ==================== -->
+        <!-- Node Editor کامل -->
+        <!-- ==================== -->
+        <file>qml/nodeeditor/NodeEditorView.qml</file>
+        <file>qml/nodeeditor/NodeToolbox.qml</file>
+        <file>qml/nodeeditor/NodeCanvas.qml</file>
+        <file>qml/nodeeditor/NodeItem.qml</file>
+        <file>qml/nodeeditor/NodePort.qml</file>
+        <file>qml/nodeeditor/ConnectionItem.qml</file>
+        <file>qml/nodeeditor/NodeSearchPanel.qml</file>
+        <file>qml/nodeeditor/NodeCategoryPanel.qml</file>
+        <file>qml/nodeeditor/NodeToolboxItem.qml</file>
+        <file>qml/nodeeditor/NodeContextMenu.qml</file>
+        <file>qml/nodeeditor/CanvasContextMenu.qml</file>
+        <file>qml/nodeeditor/NodePropertiesPanel.qml</file>
+        <file>qml/nodeeditor/NodeEditorToolbar.qml</file>
+        <file>qml/nodeeditor/NodeInfoPanel.qml</file>
+        <file>qml/nodeeditor/NodeCategoryTabs.qml</file>
+        <file>qml/nodeeditor/CategoryButton.qml</file>
+        <file>qml/nodeeditor/SearchBox.qml</file>
+        <file>qml/nodeeditor/Card.qml</file>
+        
+        <!-- ==================== -->
+        <!-- دشبورد -->
+        <!-- ==================== -->
+        
+        
+        
+        <!-- ==================== -->
+        <!-- Pipeline -->
+        <!-- ==================== -->
+        <file>qml/pipeline/PipelineExecutorView.qml</file>
+        <file>qml/pipeline/PipelineControls.qml</file>
+        
+        
+        <!-- ==================== -->
+        <!-- BCI Paradigms -->
+        <!-- ==================== -->
+        
+        
+        <!-- پارادایم‌های BCI -->
+        
+        <!-- ==================== -->
+        <!-- ویژوالایزیشن -->
+        <!-- ==================== -->
+
+        <!-- ==================== -->
+        <!-- کامپوننت‌های مشترک -->
+        <!-- ==================== -->
+        <file>qml/common/Card.qml</file>
+        <file>qml/common/Toolbox.qml</file>
+        
+        <file>qml/common/Button.qml</file>
+        <file>qml/common/Slider.qml</file>
+        <file>qml/common/ComboBox.qml</file>
+        <file>qml/common/TextField.qml</file>
+        <file>qml/common/CheckBox.qml</file>
+        <file>qml/common/RadioButton.qml</file>
+        <file>qml/common/TabBar.qml</file>
+        <file>qml/common/SplitView.qml</file>
+        <file>qml/common/ScrollView.qml</file>
+        <file>qml/common/ToggleSwitch.qml</file>
+        
+    </qresource>
+
+</RCC>

@@ -1,0 +1,437 @@
+<RCC>
+    <qresource prefix="/">
+        <!-- ==================== -->
+        <!-- فایل‌های اصلی QML -->
+        <!-- ==================== -->
+        <file>qml/main.qml</file>
+        <file>qml/SplashScreen.qml</file>
+        
+        <!-- ==================== -->
+        <!-- کامپوننت‌های Core -->
+        <!-- ==================== -->
+        <file>qml/core/NeuroTheme.qml</file>
+        <file>qml/core/NeuroHeader.qml</file>
+        <file>qml/core/NeuroSidebar.qml</file>
+        <file>qml/core/NeuroStatusBar.qml</file>
+        <file>qml/core/NeuroButton.qml</file>
+        <file>qml/core/SidebarItem.qml</file>
+        
+        <!-- ==================== -->
+        <!-- صفحه اصلی (Home) -->
+        <!-- ==================== -->
+        <file>qml/home/HomeScreen.qml</file>
+        <file>qml/home/WelcomeCard.qml</file>
+        <file>qml/home/StatBadge.qml</file>
+        <file>qml/home/QuickActionsGrid.qml</file>
+        <file>qml/home/ActionCard.qml</file>
+        <file>qml/home/RecentProjectsCard.qml</file>
+        <file>qml/home/ProjectItem.qml</file>
+        <file>qml/home/SystemStatusCard.qml</file>
+        <file>qml/home/StatusIndicator.qml</file>
+        
+        <!-- ==================== -->
+        <!-- Node Editor کامل -->
+        <!-- ==================== -->
+        <file>qml/nodeeditor/NodeEditorView.qml</file>
+        <file>qml/nodeeditor/NodeToolbox.qml</file>
+        <file>qml/nodeeditor/NodeCanvas.qml</file>
+        <file>qml/nodeeditor/NodeItem.qml</file>
+        <file>qml/nodeeditor/NodePort.qml</file>
+        <file>qml/nodeeditor/ConnectionItem.qml</file>
+        <file>qml/nodeeditor/NodeSearchPanel.qml</file>
+        <file>qml/nodeeditor/NodeCategoryPanel.qml</file>
+        <file>qml/nodeeditor/NodeToolboxItem.qml</file>
+        <file>qml/nodeeditor/NodeContextMenu.qml</file>
+        <file>qml/nodeeditor/CanvasContextMenu.qml</file>
+        <file>qml/nodeeditor/NodePropertiesPanel.qml</file>
+        <file>qml/nodeeditor/NodeEditorToolbar.qml</file>
+        <file>qml/nodeeditor/NodeInfoPanel.qml</file>
+        <file>qml/nodeeditor/NodeCategoryTabs.qml</file>
+        <file>qml/nodeeditor/CategoryButton.qml</file>
+        <file>qml/nodeeditor/SearchBox.qml</file>
+        <file>qml/nodeeditor/Card.qml</file>
+        
+        <!-- ==================== -->
+        <!-- دشبورد -->
+        <!-- ==================== -->
+        <file>qml/dashboard/DashboardView.qml</file>
+        <file>qml/dashboard/SystemHealthCard.qml</file>
+        <file>qml/dashboard/RealTimeMetricsCard.qml</file>
+        <file>qml/dashboard/MultiChannelSignalCard.qml</file>
+        <file>qml/dashboard/SpectralAnalysisCard.qml</file>
+        <file>qml/dashboard/TopographicMapCard.qml</file>
+        <file>qml/dashboard/ClassificationResultsCard.qml</file>
+        <file>qml/dashboard/PipelineStatusCard.qml</file>
+        <file>qml/dashboard/QuickControlsCard.qml</file>
+        <file>qml/dashboard/PerformanceMetricsCard.qml</file>
+        <file>qml/dashboard/DataQualityCard.qml</file>
+        
+        <!-- ویجت‌های دشبورد -->
+        <file>qml/dashboard/widgets/GaugeWidget.qml</file>
+        <file>qml/dashboard/widgets/MetricBox.qml</file>
+        <file>qml/dashboard/widgets/StatusIndicator.qml</file>
+        <file>qml/dashboard/widgets/ProgressRing.qml</file>
+        <file>qml/dashboard/widgets/Sparkline.qml</file>
+        <file>qml/dashboard/widgets/WaveformPlot.qml</file>
+        <file>qml/dashboard/widgets/ConfidenceMeter.qml</file>
+        
+        <!-- ==================== -->
+        <!-- Pipeline -->
+        <!-- ==================== -->
+        <file>qml/pipeline/PipelineExecutorView.qml</file>
+        <file>qml/pipeline/PipelineControls.qml</file>
+        <file>qml/pipeline/PerformanceMonitor.qml</file>
+        <file>qml/pipeline/ExecutionMonitor.qml</file>
+        <file>qml/pipeline/DataFlowVisualization.qml</file>
+        <file>qml/pipeline/PipelineHeader.qml</file>
+        
+        <!-- ==================== -->
+        <!-- BCI Paradigms -->
+        <!-- ==================== -->
+        <file>qml/bci/BCIParadigmManager.qml</file>
+        <file>qml/bci/ParadigmSelectionCard.qml</file>
+        <file>qml/bci/ParadigmConfigurationCard.qml</file>
+        <file>qml/bci/StimulusPresentationArea.qml</file>
+        <file>qml/bci/FeedbackDisplay.qml</file>
+        <file>qml/bci/BCIPerformanceMetrics.qml</file>
+        
+        <!-- پارادایم‌های BCI -->
+        <file>qml/bci/paradigms/P300Paradigm.qml</file>
+        <file>qml/bci/paradigms/SSVEPParadigm.qml</file>
+        <file>qml/bci/paradigms/MotorImageryParadigm.qml</file>
+        <file>qml/bci/paradigms/ERDParadigm.qml</file>
+        <file>qml/bci/paradigms/SSEPParadigm.qml</file>
+        
+        <!-- محرک‌ها -->
+        <file>qml/bci/stimuli/VisualStimulus.qml</file>
+        <file>qml/bci/stimuli/AuditoryStimulus.qml</file>
+        <file>qml/bci/stimuli/TactileStimulus.qml</file>
+        <file>qml/bci/stimuli/P300Speller.qml</file>
+        <file>qml/bci/stimuli/SSVEPGrid.qml</file>
+        <file>qml/bci/stimuli/MotorImageryCue.qml</file>
+        
+        <!-- ==================== -->
+        <!-- ویژوالایزیشن -->
+        <!-- ==================== -->
+        <file>qml/visualization/SignalPlot.qml</file>
+        <file>qml/visualization/TopographicMap.qml</file>
+        <file>qml/visualization/Spectrogram.qml</file>
+        <file>qml/visualization/TimeFrequencyPlot.qml</file>
+        <file>qml/visualization/ERPPlot.qml</file>
+        <file>qml/visualization/NetworkGraph.qml</file>
+        <file>qml/visualization/HeatMap.qml</file>
+        <file>qml/visualization/ButterflyPlot.qml</file>
+        
+        <!-- ==================== -->
+        <!-- کامپوننت‌های مشترک -->
+        <!-- ==================== -->
+        <file>qml/common/Card.qml</file>
+        <file>qml/common/Toolbox.qml</file>
+        <file>qml/common/Dialog.qml</file>
+        <file>qml/common/Button.qml</file>
+        <file>qml/common/Slider.qml</file>
+        <file>qml/common/ComboBox.qml</file>
+        <file>qml/common/TextField.qml</file>
+        <file>qml/common/CheckBox.qml</file>
+        <file>qml/common/RadioButton.qml</file>
+        <file>qml/common/TabBar.qml</file>
+        <file>qml/common/SplitView.qml</file>
+        <file>qml/common/ScrollView.qml</file>
+        <file>qml/common/ProgressBar.qml</file>
+        <file>qml/common/ToggleSwitch.qml</file>
+        
+        <!-- ==================== -->
+        <!-- فونت‌ها -->
+        <!-- ==================== -->
+        <file>resources/fonts/Roboto-Regular.ttf</file>
+        <file>resources/fonts/Roboto-Bold.ttf</file>
+        <file>resources/fonts/Roboto-Italic.ttf</file>
+        <file>resources/fonts/Roboto-BoldItalic.ttf</file>
+        <file>resources/fonts/RobotoMono-Regular.ttf</file>
+        <file>resources/fonts/RobotoMono-Bold.ttf</file>
+        <file>resources/fonts/FontAwesome-Solid.ttf</file>
+        <file>resources/fonts/FontAwesome-Regular.ttf</file>
+        <file>resources/fonts/MaterialIcons-Regular.ttf</file>
+        
+        <!-- ==================== -->
+        <!-- آیکون‌های اصلی -->
+        <!-- ==================== -->
+        <file>resources/icons/app_icon.png</file>
+        <file>resources/icons/app_icon.ico</file>
+        <file>resources/icons/app_icon.icns</file>
+        <file>resources/icons/logo.png</file>
+        <file>resources/icons/logo.svg</file>
+        
+        <!-- آیکون‌های ناوبری -->
+        <file>resources/icons/navigation/dashboard.png</file>
+        <file>resources/icons/navigation/node_editor.png</file>
+        <file>resources/icons/navigation/pipeline.png</file>
+        <file>resources/icons/navigation/bci.png</file>
+        <file>resources/icons/navigation/analysis.png</file>
+        <file>resources/icons/navigation/settings.png</file>
+        <file>resources/icons/navigation/profile.png</file>
+        <file>resources/icons/navigation/help.png</file>
+        
+        <!-- آیکون‌های نودها -->
+        <file>resources/icons/nodes/eeg_input.png</file>
+        <file>resources/icons/nodes/ecg_input.png</file>
+        <file>resources/icons/nodes/emg_input.png</file>
+        <file>resources/icons/nodes/filter.png</file>
+        <file>resources/icons/nodes/bandpass.png</file>
+        <file>resources/icons/nodes/notch.png</file>
+        <file>resources/icons/nodes/csp.png</file>
+        <file>resources/icons/nodes/lda.png</file>
+        <file>resources/icons/nodes/svm.png</file>
+        <file>resources/icons/nodes/nn.png</file>
+        <file>resources/icons/nodes/plot.png</file>
+        <file>resources/icons/nodes/topomap.png</file>
+        <file>resources/icons/nodes/spectrogram.png</file>
+        <file>resources/icons/nodes/output.png</file>
+        <file>resources/icons/nodes/file_input.png</file>
+        <file>resources/icons/nodes/device_input.png</file>
+        <file>resources/icons/nodes/processor.png</file>
+        <file>resources/icons/nodes/feature_extractor.png</file>
+        <file>resources/icons/nodes/classifier.png</file>
+        <file>resources/icons/nodes/visualizer.png</file>
+        
+        <!-- آیکون‌های کنترل -->
+        <file>resources/icons/controls/play.png</file>
+        <file>resources/icons/controls/stop.png</file>
+        <file>resources/icons/controls/pause.png</file>
+        <file>resources/icons/controls/save.png</file>
+        <file>resources/icons/controls/load.png</file>
+        <file>resources/icons/controls/record.png</file>
+        <file>resources/icons/controls/zoom_in.png</file>
+        <file>resources/icons/controls/zoom_out.png</file>
+        <file>resources/icons/controls/fit_view.png</file>
+        <file>resources/icons/controls/clear.png</file>
+        <file>resources/icons/controls/layout.png</file>
+        <file>resources/icons/controls/copy.png</file>
+        <file>resources/icons/controls/paste.png</file>
+        <file>resources/icons/controls/cut.png</file>
+        <file>resources/icons/controls/delete.png</file>
+        
+        <!-- آیکون‌های وضعیت -->
+        <file>resources/icons/status/connected.png</file>
+        <file>resources/icons/status/disconnected.png</file>
+        <file>resources/icons/status/running.png</file>
+        <file>resources/icons/status/stopped.png</file>
+        <file>resources/icons/status/success.png</file>
+        <file>resources/icons/status/error.png</file>
+        <file>resources/icons/status/warning.png</file>
+        <file>resources/icons/status/info.png</file>
+        <file>resources/icons/status/idle.png</file>
+        <file>resources/icons/status/processing.png</file>
+        
+        <!-- آیکون‌های پورت‌ها -->
+        <file>resources/icons/ports/input.png</file>
+        <file>resources/icons/ports/output.png</file>
+        <file>resources/icons/ports/eeg.png</file>
+        <file>resources/icons/ports/ecg.png</file>
+        <file>resources/icons/ports/emg.png</file>
+        <file>resources/icons/ports/feature.png</file>
+        <file>resources/icons/ports/classification.png</file>
+        <file>resources/icons/ports/control.png</file>
+        
+        <!-- ==================== -->
+        <!-- تصاویر زمینه -->
+        <!-- ==================== -->
+        <file>resources/images/backgrounds/grid.png</file>
+        <file>resources/images/backgrounds/dots.png</file>
+        <file>resources/images/backgrounds/circuit.png</file>
+        <file>resources/images/backgrounds/neural_network.jpg</file>
+        <file>resources/images/backgrounds/wave_pattern.png</file>
+        
+        <!-- تصاویر ویژوالایزیشن -->
+        <file>resources/images/visualization/brain_topography.png</file>
+        <file>resources/images/visualization/eeg_channels.png</file>
+        <file>resources/images/visualization/spectrum_template.png</file>
+        <file>resources/images/visualization/head_model.png</file>
+        <file>resources/images/visualization/channel_locations.png</file>
+        
+        <!-- تصاویر محرک‌های BCI -->
+        <file>resources/images/stimuli/p300_grid.png</file>
+        <file>resources/images/stimuli/ssvep_frequencies.png</file>
+        <file>resources/images/stimuli/motor_imagery_cues.png</file>
+        <file>resources/images/stimuli/visual_patterns.png</file>
+        <file>resources/images/stimuli/auditory_waves.png</file>
+        
+        <!-- ==================== -->
+        <!-- فایل‌های صوتی -->
+        <!-- ==================== -->
+        <file>resources/sounds/beep.wav</file>
+        <file>resources/sounds/click.wav</file>
+        <file>resources/sounds/notification.wav</file>
+        <file>resources/sounds/error.wav</file>
+        <file>resources/sounds/success.wav</file>
+        <file>resources/sounds/start.wav</file>
+        <file>resources/sounds/stop.wav</file>
+        
+        <!-- ==================== -->
+        <!-- فایل‌های پیکربندی -->
+        <!-- ==================== -->
+        <file>resources/config/default_settings.json</file>
+        <file>resources/config/device_profiles.json</file>
+        <file>resources/config/paradigm_templates.json</file>
+        <file>resources/config/node_templates.json</file>
+        <file>resources/config/color_schemes.json</file>
+        <file>resources/config/shortcuts.json</file>
+        <file>resources/config/ui_layouts.json</file>
+        
+        <!-- ==================== -->
+        <!-- تم‌ها -->
+        <!-- ==================== -->
+        <file>resources/themes/dark_theme.json</file>
+        <file>resources/themes/light_theme.json</file>
+        <file>resources/themes/blue_theme.json</file>
+        <file>resources/themes/green_theme.json</file>
+        <file>resources/themes/purple_theme.json</file>
+        <file>resources/themes/medical_theme.json</file>
+        
+        <!-- ==================== -->
+        <!-- طرح‌بندی‌های پیشفرض -->
+        <!-- ==================== -->
+        <file>resources/layouts/dashboard_default.json</file>
+        <file>resources/layouts/editor_default.json</file>
+        <file>resources/layouts/analysis_default.json</file>
+        <file>resources/layouts/bci_default.json</file>
+        <file>resources/layouts/pipeline_default.json</file>
+        
+        <!-- ==================== -->
+        <!-- نمونه داده‌ها -->
+        <!-- ==================== -->
+        <file>resources/data/sample_eeg.csv</file>
+        <file>resources/data/sample_ecg.csv</file>
+        <file>resources/data/sample_emg.csv</file>
+        <file>resources/data/channel_locations.json</file>
+        <file>resources/data/standard_montages.json</file>
+        <file>resources/data/frequency_bands.json</file>
+        <file>resources/data/filter_coefficients.json</file>
+        
+        <!-- ==================== -->
+        <!-- فایل‌های راهنما -->
+        <!-- ==================== -->
+        <file>resources/help/getting_started.md</file>
+        <file>resources/help/node_reference.md</file>
+        <file>resources/help/paradigm_guide.md</file>
+        <file>resources/help/troubleshooting.md</file>
+        <file>resources/help/developer_guide.md</file>
+        <file>resources/help/user_manual.md</file>
+        
+        <!-- ==================== -->
+        <!-- ترجمه‌ها -->
+        <!-- ==================== -->
+        <file>resources/translations/en_US.qm</file>
+        <file>resources/translations/fa_IR.qm</file>
+        <file>resources/translations/de_DE.qm</file>
+        <file>resources/translations/es_ES.qm</file>
+        <file>resources/translations/zh_CN.qm</file>
+        <file>resources/translations/fr_FR.qm</file>
+        <file>resources/translations/ja_JP.qm</file>
+        
+        <!-- ==================== -->
+        <!-- اسکریپت‌های پایتون -->
+        <!-- ==================== -->
+        <file>resources/scripts/filters/bandpass.py</file>
+        <file>resources/scripts/filters/notch.py</file>
+        <file>resources/scripts/filters/adaptive.py</file>
+        <file>resources/scripts/features/csp.py</file>
+        <file>resources/scripts/features/psd.py</file>
+        <file>resources/scripts/features/time_domain.py</file>
+        <file>resources/scripts/classifiers/lda.py</file>
+        <file>resources/scripts/classifiers/svm.py</file>
+        <file>resources/scripts/classifiers/nn.py</file>
+        <file>resources/scripts/preprocessing/artifact_removal.py</file>
+        <file>resources/scripts/preprocessing/baseline_correction.py</file>
+        <file>resources/scripts/visualization/topomap.py</file>
+        <file>resources/scripts/visualization/spectrogram.py</file>
+        <file>resources/scripts/visualization/erp.py</file>
+        
+        <!-- ==================== -->
+        <!-- پلاگین‌های نمونه -->
+        <!-- ==================== -->
+        <file>resources/plugins/template_plugin.cpp</file>
+        <file>resources/plugins/template_plugin.h</file>
+        <file>resources/plugins/plugin_guide.md</file>
+        <file>resources/plugins/example_eeg_plugin.cpp</file>
+        <file>resources/plugins/example_visualization_plugin.cpp</file>
+        
+        <!-- ==================== -->
+        <!-- مستندات -->
+        <!-- ==================== -->
+        <file>resources/docs/api_reference.html</file>
+        <file>resources/docs/developer_guide.html</file>
+        <file>resources/docs/user_manual.html</file>
+        <file>resources/docs/tutorials.html</file>
+        <file>resources/docs/faq.html</file>
+        
+        <!-- ==================== -->
+        <!-- شابلون‌ها -->
+        <!-- ==================== -->
+        <file>resources/templates/p300_pipeline.json</file>
+        <file>resources/templates/ssvep_pipeline.json</file>
+        <file>resources/templates/motor_imagery_pipeline.json</file>
+        <file>resources/templates/eeg_analysis_pipeline.json</file>
+        <file>resources/templates/ecg_analysis_pipeline.json</file>
+        <file>resources/templates/emg_analysis_pipeline.json</file>
+        <file>resources/templates/bci_training_pipeline.json</file>
+        
+        <!-- ==================== -->
+        <!-- والپیپرها -->
+        <!-- ==================== -->
+        <file>resources/wallpapers/dark_blue.jpg</file>
+        <file>resources/wallpapers/circuit_board.jpg</file>
+        <file>resources/wallpapers/neural_network.jpg</file>
+        <file>resources/wallpapers/dna_strand.jpg</file>
+        <file>resources/wallpapers/brain_scan.jpg</file>
+        <file>resources/wallpapers/digital_waves.jpg</file>
+    </qresource>
+
+    <!-- ==================== -->
+    <!-- منابع توسعه -->
+    <!-- ==================== -->
+    <qresource prefix="/dev">
+        <file>qml/dev/ComponentTestBed.qml</file>
+        <file>qml/dev/StyleGuide.qml</file>
+        <file>qml/dev/IconGallery.qml</file>
+        <file>qml/dev/AnimationTest.qml</file>
+        <file>qml/dev/PerformanceTest.qml</file>
+        <file>qml/dev/NodeTestSuite.qml</file>
+        <file>qml/dev/VisualizationTest.qml</file>
+    </qresource>
+
+    <!-- ==================== -->
+    <!-- دموها -->
+    <!-- ==================== -->
+    <qresource prefix="/demos">
+        <file>qml/demos/P300Demo.qml</file>
+        <file>qml/demos/SSVEPDemo.qml</file>
+        <file>qml/demos/MotorImageryDemo.qml</file>
+        <file>qml/demos/SignalProcessingDemo.qml</file>
+        <file>qml/demos/VisualizationDemo.qml</file>
+        <file>qml/demos/NodeEditorDemo.qml</file>
+        <file>qml/demos/PipelineDemo.qml</file>
+        <file>resources/demos/sample_data/demo_eeg.edf</file>
+        <file>resources/demos/sample_data/demo_ecg.csv</file>
+        <file>resources/demos/sample_data/demo_emg.mat</file>
+        <file>resources/demos/sample_data/demo_erp.set</file>
+    </qresource>
+
+    <!-- ==================== -->
+    <!-- آموزش‌ها -->
+    <!-- ==================== -->
+    <qresource prefix="/tutorials">
+        <file>qml/tutorials/GettingStarted.qml</file>
+        <file>qml/tutorials/NodeEditorTutorial.qml</file>
+        <file>qml/tutorials/PipelineTutorial.qml</file>
+        <file>qml/tutorials/BCIParadigmTutorial.qml</file>
+        <file>qml/tutorials/SignalProcessingTutorial.qml</file>
+        <file>qml/tutorials/VisualizationTutorial.qml</file>
+        <file>resources/tutorials/videos/intro.mp4</file>
+        <file>resources/tutorials/images/step1.png</file>
+        <file>resources/tutorials/images/step2.png</file>
+        <file>resources/tutorials/images/step3.png</file>
+        <file>resources/tutorials/images/step4.png</file>
+        <file>resources/tutorials/images/step5.png</file>
+    </qresource>
+</RCC>

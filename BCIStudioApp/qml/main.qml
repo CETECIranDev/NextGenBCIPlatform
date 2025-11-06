@@ -20,6 +20,10 @@ ApplicationWindow {
     visible: true
     title: "BCI Studio Pro - Advanced BCI Platform"
 
+    // تنظیمات پنجره برای fullscreen و حذف نوار پیش‌فرض
+    flags: Qt.Window | Qt.FramelessWindowHint
+    visibility: Window.FullScreen
+
 
     ThemeManager {
         id: appTheme
@@ -119,13 +123,181 @@ ApplicationWindow {
         }
     }
 
+    // نوار عنوان سفارشی
+        Rectangle {
+            id: customTitleBar
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 40
+            color: theme.backgroundSecondary
+            z: 1000
+
+            MouseArea {
+                anchors.fill: parent
+                property point clickPos: "0,0"
+
+                onPressed: {
+                    clickPos = Qt.point(mouse.x, mouse.y)
+                }
+
+                onPositionChanged: {
+                    if (pressed) {
+                        var delta = Qt.point(mouse.x - clickPos.x, mouse.y - clickPos.y)
+                        mainWindow.x += delta.x
+                        mainWindow.y += delta.y
+                    }
+                }
+            }
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 12
+                anchors.rightMargin: 12
+                spacing: 8
+
+                // لوگو و عنوان برنامه
+                Row {
+                    spacing: 8
+                    Layout.alignment: Qt.AlignVCenter
+
+                    Text {
+                        text: "🧠"
+                        font.pixelSize: 16
+                        color: theme.textPrimary
+                    }
+
+                    Text {
+                        text: "BCI Studio Pro"
+                        color: theme.textPrimary
+                        font.bold: true
+                        font.pixelSize: 14
+                    }
+                }
+
+                Item { Layout.fillWidth: true }
+
+                // دکمه‌های کنترل پنجره
+                Row {
+                    spacing: 6
+                    Layout.alignment: Qt.AlignVCenter
+
+                    // دکمه مینیمایز
+                    Rectangle {
+                        width: 28
+                        height: 28
+                        radius: 4
+                        color: "transparent"
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: mainWindow.visibility = Window.Minimized
+
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: parent.radius
+                                color: theme.primary
+                                opacity: parent.containsMouse ? 0.1 : 0
+                            }
+                        }
+
+                        Text {
+                            text: "−"
+                            color: theme.textPrimary
+                            font.pixelSize: 16
+                            font.bold: true
+                            anchors.centerIn: parent
+                        }
+                    }
+
+                    // دکمه toggle fullscreen/windowed
+                    Rectangle {
+                        width: 28
+                        height: 28
+                        radius: 4
+                        color: "transparent"
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                if (mainWindow.visibility === Window.FullScreen) {
+                                    mainWindow.visibility = Window.Windowed
+                                    mainWindow.showMaximized()
+                                } else {
+                                    mainWindow.visibility = Window.FullScreen
+                                }
+                            }
+
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: parent.radius
+                                color: theme.primary
+                                opacity: parent.containsMouse ? 0.1 : 0
+                            }
+                        }
+
+                        Text {
+                            text: "⛶"
+                            color: theme.textPrimary
+                            font.pixelSize: 12
+                            anchors.centerIn: parent
+                        }
+                    }
+
+                    // دکمه بستن برنامه
+                    Rectangle {
+                        width: 28
+                        height: 28
+                        radius: 4
+                        color: "transparent"
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: mainWindow.close()
+
+                            Rectangle {
+                                anchors.fill: parent
+                                radius: parent.radius
+                                color: "#FF5252"
+                                opacity: parent.containsMouse ? 0.2 : 0
+                            }
+                        }
+
+                        Text {
+                            text: "×"
+                            color: theme.textPrimary
+                            font.pixelSize: 18
+                            font.bold: true
+                            anchors.centerIn: parent
+                        }
+                    }
+                }
+            }
+
+            // خط جداکننده
+            Rectangle {
+                anchors.bottom: parent.bottom
+                width: parent.width
+                height: 1
+                color: theme.border
+            }
+        }
+
     // صفحه اصلی
     Rectangle {
         id: mainContainer
-        anchors.fill: parent
+        anchors.top: customTitleBar.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
         color: "transparent"
         visible: !splashScreen.visible
-
         // Background with gradient and pattern
         Rectangle {
             anchors.fill: parent
@@ -155,8 +327,8 @@ ApplicationWindow {
                 height: 80
                 currentWorkspace: appController ? appController.currentWorkspace : "home"
                 onTogglePropertiesPanel: console.log("Toggle properties panel")
-                onToggleFullScreen: mainWindow.visibility === Window.Windowed ?
-                    mainWindow.showMaximized() : mainWindow.showNormal()
+                // onToggleFullScreen: mainWindow.visibility === Window.Windowed ?
+                //     mainWindow.showMaximized() : mainWindow.showNormal()
 
                 // سوئیچ تم در هدر
                 ThemeSwitcher {
@@ -247,6 +419,8 @@ ApplicationWindow {
                         // BCI Paradigms
                         BCIParadigmManager {
                             id: bciManager
+                           theme: mainWindow.theme
+                           appController: mainWindow.appController
                         }
 
                         // Placeholder برای workspaceهای دیگر
@@ -296,7 +470,7 @@ ApplicationWindow {
             // Status Bar
             NeuroStatusBar {
                 Layout.fillWidth: true
-                height: 35
+                height: 30
                 currentWorkspace: appController ? appController.currentWorkspace : "home"
                 currentProject: appController ? appController.currentProjectName : "No Project"
                 hasUnsavedChanges: appController ? appController.hasUnsavedChanges : false
@@ -686,6 +860,7 @@ ApplicationWindow {
         console.log("BCI Studio Pro initialized successfully!")
         console.log("Current theme:", appTheme.currentTheme)
 
+
         // Wait for context property to be available
         if (typeof appController !== "undefined" && appController !== null) {
             appController.initialize()
@@ -821,6 +996,37 @@ ApplicationWindow {
         sequence: "Ctrl+B"
         onActivated: mainSidebar.collapsed = !mainSidebar.collapsed
     }
+
+    // آپدیت shortcutهای مربوط به fullscreen
+        Shortcut {
+            sequence: "F11"
+            onActivated: {
+                if (mainWindow.visibility === Window.FullScreen) {
+                    mainWindow.visibility = Window.Windowed
+                    mainWindow.showMaximized()
+                } else {
+                    mainWindow.visibility = Window.FullScreen
+                }
+            }
+        }
+
+        Shortcut {
+            sequence: "Alt+F4"
+            onActivated: mainWindow.close()
+        }
+
+        Shortcut {
+            sequence: "Alt+Enter"
+            onActivated: {
+                if (mainWindow.visibility === Window.FullScreen) {
+                    mainWindow.visibility = Window.Windowed
+                    mainWindow.showMaximized()
+                } else {
+                    mainWindow.visibility = Window.FullScreen
+                }
+            }
+        }
+
 
     // درباره برنامه
     Dialog {

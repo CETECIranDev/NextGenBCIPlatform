@@ -3,17 +3,16 @@ import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 import Qt5Compat.GraphicalEffects
 
-
 Rectangle {
     id: nodeToolbox
     color: theme.backgroundSecondary
     border.color: theme.border
     border.width: 1
+    radius: 12
 
     property var theme
     signal nodeDragStarted(string nodeType, var mouse)
     signal categorySelected(string category)
-    signal toolboxCategoriesChanged() // تغییر نام سیگنال
 
     property var categories: [
         {
@@ -35,30 +34,9 @@ Rectangle {
                 {type: "notch_filter", name: "Notch Filter", icon: "🔇", description: "Remove power line noise"},
                 {type: "artifact_removal", name: "Artifact Removal", icon: "✨", description: "Remove eye blinks and artifacts"}
             ]
-        },
-        {
-            name: "Feature Extraction",
-            icon: "🔍",
-            color: "#06D6A0",
-            nodes: [
-                {type: "psd_features", name: "PSD Features", icon: "📊", description: "Power Spectral Density features"},
-                {type: "csp_features", name: "CSP Features", icon: "🧩", description: "Common Spatial Patterns features"},
-                {type: "time_features", name: "Time Features", icon: "⏱️", description: "Time-domain features"}
-            ]
-        },
-        {
-            name: "BCI Paradigms",
-            icon: "🧠",
-            color: "#7209B7",
-            nodes: [
-                {type: "p300_speller", name: "P300 Speller", icon: "🔤", description: "P300 spelling interface"},
-                {type: "ssvep_detector", name: "SSVEP Detector", icon: "📊", description: "Steady-State VEP detection"},
-                {type: "motor_imagery", name: "Motor Imagery", icon: "💪", description: "Motor imagery classification"}
-            ]
         }
     ]
 
-    // Shadow effect
     layer.enabled: true
     layer.effect: DropShadow {
         transparentBorder: true
@@ -145,10 +123,6 @@ Rectangle {
                     border.color: theme.border
                     border.width: 1
                 }
-
-                onTextChanged: {
-                    filterNodes();
-                }
             }
         }
 
@@ -165,7 +139,7 @@ Rectangle {
 
                 Repeater {
                     id: categoryRepeater
-                    model: filteredCategories
+                    model: categories
 
                     delegate: Rectangle {
                         id: categoryDelegate
@@ -225,14 +199,6 @@ Rectangle {
                                         Layout.alignment: Qt.AlignVCenter
                                     }
                                 }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        nodeToolbox.categorySelected(modelData.name);
-                                    }
-                                }
                             }
 
                             // Nodes List
@@ -257,17 +223,17 @@ Rectangle {
                                         property string nodeDescription: modelData.description
                                         property color nodeColor: modelData.color
 
-                                        // Hover effect
-                                        Behavior on color {
-                                            ColorAnimation { duration: 200 }
-                                        }
+                                        // Drag item
+                                        Drag.active: nodeMouseArea.drag.active
+                                        Drag.hotSpot: Qt.point(width / 2, height / 2)
+                                        Drag.keys: ['node/' + nodeType]
 
                                         RowLayout {
                                             anchors.fill: parent
                                             anchors.margins: 12
                                             spacing: 12
 
-                                            // Node Icon
+                                            // Node Icon with Drag Handle
                                             Rectangle {
                                                 width: 44
                                                 height: 44
@@ -343,32 +309,38 @@ Rectangle {
                                             }
                                         }
 
-                                        // Mouse Area for Drag
+                                        // Mouse Area for Drag - کاملاً اصلاح شده
                                         MouseArea {
                                             id: nodeMouseArea
                                             anchors.fill: parent
                                             hoverEnabled: true
                                             cursorShape: Qt.PointingHandCursor
-                                            drag.threshold: 1
+                                            drag.target: nodeItem
+                                            drag.axis: Drag.XAndYAxis
 
-                                            property bool isDragging: false
-                                            property point dragStartPos
+                                            property bool dragging: false
+                                            property point startPos
 
                                             onPressed: (mouse) => {
-                                                console.log("🖱️ Node pressed:", nodeType);
-                                                dragStartPos = Qt.point(mouse.x, mouse.y);
-                                                isDragging = false;
+                                                console.log("🖱️ Node pressed for drag:", nodeType);
+                                                startPos = Qt.point(mouse.x, mouse.y);
+                                                dragging = false;
+                                                forceActiveFocus();
                                             }
 
                                             onPositionChanged: (mouse) => {
-                                                if (pressed && !isDragging &&
-                                                    (Math.abs(mouse.x - mouse.originX) > drag.threshold ||
-                                                     Math.abs(mouse.y - mouse.originY) > drag.threshold)) {
-                                                    isDragging = true;
+                                                if (pressed && !dragging &&
+                                                    (Math.abs(mouse.x - startPos.x) > 5 ||
+                                                     Math.abs(mouse.y - startPos.y) > 5)) {
+                                                    dragging = true;
                                                     console.log("🚀 Starting drag for:", nodeType);
 
-                                                    // شروع درگ
-                                                    var globalPos = nodeItem.mapToItem(null, mouse.x, mouse.y);
+                                                    // شروع درگ رسمی
+                                                    nodeItem.Drag.active = true;
+                                                    nodeItem.Drag.hotSpot = Qt.point(mouse.x, mouse.y);
+
+                                                    // سیگنال به EditorView
+                                                    var globalPos = mapToItem(null, mouse.x, mouse.y);
                                                     nodeToolbox.nodeDragStarted(nodeType, {
                                                         x: globalPos.x,
                                                         y: globalPos.y,
@@ -377,18 +349,18 @@ Rectangle {
                                                 }
                                             }
 
-                                            onReleased: {
-                                                if (!isDragging) {
-                                                    // اگر درگ نبود، کلیک ساده است
-                                                    console.log("👆 Node clicked:", nodeType);
+                                            onReleased: (mouse) => {
+                                                console.log("🖱️ Mouse released");
+                                                if (dragging) {
+                                                    nodeItem.Drag.active = false;
+                                                    dragging = false;
+                                                    console.log("🧹 Drag ended");
                                                 }
-                                                isDragging = false;
                                             }
 
-                                            onExited: {
-                                                if (pressed && isDragging) {
-                                                    // اگر درگ ادامه دارد خارج از آیتم
-                                                    console.log("📍 Drag continuing outside node item");
+                                            onClicked: {
+                                                if (!dragging) {
+                                                    console.log("👆 Node clicked:", nodeType);
                                                 }
                                             }
                                         }
@@ -407,220 +379,11 @@ Rectangle {
                         }
                     }
                 }
-
-                // Empty State
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    color: "transparent"
-                    visible: filteredCategories.length === 0
-
-                    ColumnLayout {
-                        anchors.centerIn: parent
-                        spacing: 16
-                        width: parent.width * 0.8
-
-                        Rectangle {
-                            width: 80
-                            height: 80
-                            radius: 40
-                            color: theme.backgroundTertiary
-                            Layout.alignment: Qt.AlignCenter
-
-                            Text {
-                                text: "🔍"
-                                font.pixelSize: 32
-                                color: theme.textTertiary
-                                anchors.centerIn: parent
-                            }
-                        }
-
-                        ColumnLayout {
-                            spacing: 6
-                            Layout.alignment: Qt.AlignCenter
-
-                            Text {
-                                text: "No nodes found"
-                                color: theme.textPrimary
-                                font.family: "Segoe UI Semibold"
-                                font.pixelSize: 16
-                                font.weight: Font.DemiBold
-                                Layout.alignment: Qt.AlignCenter
-                            }
-
-                            Text {
-                                text: "Try adjusting your search terms"
-                                color: theme.textTertiary
-                                font.family: "Segoe UI"
-                                font.pixelSize: 12
-                                horizontalAlignment: Text.AlignHCenter
-                                wrapMode: Text.WordWrap
-                                Layout.fillWidth: true
-                            }
-                        }
-                    }
-                }
             }
         }
     }
 
-    // Property برای فیلتر کردن دسته‌بندی‌ها
-    property var filteredCategories: {
-        if (!searchBox.text) {
-            return categories;
-        }
-
-        var searchTerm = searchBox.text.toLowerCase();
-        var filtered = [];
-
-        for (var i = 0; i < categories.length; i++) {
-            var category = categories[i];
-            var filteredNodes = [];
-
-            // فیلتر نودها در این دسته‌بندی
-            for (var j = 0; j < category.nodes.length; j++) {
-                var node = category.nodes[j];
-                if (node.name.toLowerCase().includes(searchTerm) ||
-                    node.description.toLowerCase().includes(searchTerm) ||
-                    node.type.toLowerCase().includes(searchTerm)) {
-                    filteredNodes.push(node);
-                }
-            }
-
-            // اگر نودی در این دسته‌بندی باقی ماند، دسته‌بندی را اضافه کن
-            if (filteredNodes.length > 0) {
-                var filteredCategory = {
-                    name: category.name,
-                    icon: category.icon,
-                    color: category.color,
-                    nodes: filteredNodes
-                };
-                filtered.push(filteredCategory);
-            }
-        }
-
-        return filtered;
-    }
-
-    // تابع فیلتر کردن نودها
-    function filterNodes() {
-        console.log("🔍 Filtering nodes. Search term:", searchBox.text);
-    }
-
-    // تابع برای پیدا کردن نود بر اساس نوع
-    function findNodeByType(nodeType) {
-        for (var i = 0; i < categories.length; i++) {
-            var category = categories[i];
-            for (var j = 0; j < category.nodes.length; j++) {
-                if (category.nodes[j].type === nodeType) {
-                    return category.nodes[j];
-                }
-            }
-        }
-        return null;
-    }
-
-    // تابع برای گرفتن تمام نودها
-    function getAllNodes() {
-        var allNodes = [];
-        for (var i = 0; i < categories.length; i++) {
-            allNodes = allNodes.concat(categories[i].nodes);
-        }
-        return allNodes;
-    }
-
-    // تابع برای اضافه کردن دسته‌بندی جدید
-    function addCategory(categoryData) {
-        categories.push(categoryData);
-        toolboxCategoriesChanged(); // استفاده از نام جدید
-    }
-
-    // تابع برای اضافه کردن نود به دسته‌بندی
-    function addNodeToCategory(categoryName, nodeData) {
-        for (var i = 0; i < categories.length; i++) {
-            if (categories[i].name === categoryName) {
-                categories[i].nodes.push(nodeData);
-                toolboxCategoriesChanged(); // استفاده از نام جدید
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // تابع برای حذف نود
-    function removeNode(nodeType) {
-        for (var i = 0; i < categories.length; i++) {
-            var category = categories[i];
-            for (var j = 0; j < category.nodes.length; j++) {
-                if (category.nodes[j].type === nodeType) {
-                    category.nodes.splice(j, 1);
-                    toolboxCategoriesChanged(); // استفاده از نام جدید
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    // انیمیشن هنگام تغییر
-    Behavior on Layout.preferredWidth {
-        NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
-    }
-
-    // وضعیت collapse
-    states: [
-        State {
-            name: "collapsed"
-            when: typeof nodeEditorView !== 'undefined' && nodeEditorView.leftSidebarCollapsed
-            PropertyChanges {
-                target: nodeToolbox;
-                opacity: 0.8
-            }
-        }
-    ]
-
-    // Tooltip برای آیتم‌ها
-    ToolTip {
-        id: nodeTooltip
-        delay: 500
-        timeout: 3000
-    }
-
-    // Initialization
     Component.onCompleted: {
-        console.log("🧩 NodeToolbox initialized with", categories.length, "categories");
-        console.log("📊 Total nodes:", getAllNodes().length);
-
-        // نمایش اطلاعات دسته‌بندی‌ها
-        categories.forEach(function(category, index) {
-            console.log("📁 Category", index + 1 + ":", category.name, "with", category.nodes.length, "nodes");
-        });
-    }
-
-    // Debug information
-    function debugInfo() {
-        console.log("=== NODE TOOLBOX DEBUG INFO ===");
-        console.log("Categories:", categories.length);
-        console.log("Filtered categories:", filteredCategories.length);
-        console.log("Search term:", searchBox.text);
-        console.log("Theme available:", theme !== undefined);
-        console.log("===============================");
-    }
-
-    // تابع برای ریست جستجو
-    function clearSearch() {
-        searchBox.text = "";
-    }
-
-    // تابع برای به‌روزرسانی تم
-    function updateTheme(newTheme) {
-        theme = newTheme;
-    }
-
-    // مدیریت تغییر سایز
-    onWidthChanged: {
-        if (width < 200) {
-            console.log("⚠️ NodeToolbox width is very small:", width);
-        }
+        console.log("🧩 NodeToolbox initialized with drag support");
     }
 }

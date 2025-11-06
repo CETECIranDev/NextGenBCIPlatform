@@ -163,9 +163,9 @@ Rectangle {
             // New Project Button
             MaterialButton {
                 text: "➕"
-                tooltip: "New Project"
+                tooltip:   "New Project"
                 buttonColor: theme.primary
-                highlighted: true
+                isHighlighted: true
                 onClicked: neuroHeader.newProjectRequested()
 
                 Text {

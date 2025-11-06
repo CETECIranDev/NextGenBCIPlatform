@@ -103,6 +103,13 @@ qt_add_resources(BCIStudioApp "qml_resources"
         qml/common/Toolbox.qml
         qml/common/ThemedCard.qml
         qml/common/MaterialButton.qml
+        qml/common/MaterialCard.qml
+        qml/common/MaterialTextField.qml
+        qml/common/MaterialToolTip.qml
+        qml/common/EnterpriseToolBar.qml
+        qml/common/ControlPanel.qml
+        qml/common/ControlSection.qml
+        qml/common/StatusIndicator.qml
 
         qml/models/DashboardModel.qml
 
@@ -207,7 +214,66 @@ qt_add_resources(BCIStudioApp "qml_resources"
         qml/pipeline/PipelineExecutorView.qml
         qml/pipeline/PipelineControls.qml
 
+
+        qml/bci/BCIExperimentController.qml
         qml/bci/BCIParadigmManager.qml
+        qml/bci/paradigms/MotorImageryConfigView.qml
+        qml/bci/paradigms/P300ConfigView.qml
+        qml/bci/paradigms/ParadigmCard.qml
+        qml/bci/paradigms/ParadigmConfigFactory.qml
+        qml/bci/paradigms/ParadigmExecutionView.qml
+        qml/bci/paradigms/ParadigmSelectionView.qml
+        qml/bci/paradigms/SSVEPConfigView.qml
+        qml/bci/paradigms/ModernParadigmCard.qml
+        qml/bci/paradigms/StatItem.qml
+        qml/bci/paradigms/StatBox.qml
+        qml/bci/paradigms/EnterpriseP300View.qml
+        qml/bci/paradigms/EnterpriseSSVEPView.qml
+        qml/bci/paradigms/EnterpriseMotorImageryView.qml
+        qml/bci/paradigms/SSVEPSignalVisualizer.qml
+
+        qml/bci/paradigms/components/P300ControlPanel.qml
+        qml/bci/paradigms/components/LegendItem.qml
+        qml/bci/paradigms/components/FlatButton.qml
+        qml/bci/paradigms/components/SettingItem.qml
+        qml/bci/paradigms/components/SystemInfoItem.qml
+        qml/bci/paradigms/components/P300EEGVisualizer.qml
+        qml/bci/paradigms/components/P300GridItem.qml
+        qml/bci/paradigms/components/P300GridVisualization.qml
+        qml/bci/paradigms/components/P300PerformanceMetrics.qml
+        qml/bci/paradigms/components/P300TopBar.qml
+        qml/bci/paradigms/components/P300ERPVisualizer.qml
+        qml/bci/paradigms/components/P300FlashController.qml
+        qml/bci/paradigms/components/ParadigmAccessCard.qml
+        qml/bci/paradigms/components/RecentExperimentItem.qml
+        qml/bci/paradigms/components/RecentExperimentsList.qml
+        qml/bci/paradigms/components/StatusBadge.qml
+        qml/bci/paradigms/components/StatusIndicator.qml
+        qml/bci/paradigms/components/SystemStatusPanel.qml
+        qml/bci/paradigms/components/BrainActivationMap.qml
+        qml/bci/paradigms/components/MotorImageryControlPanel.qml
+        qml/bci/paradigms/components/MotorImageryTopBar.qml
+        qml/bci/paradigms/components/CueVisualization.qml
+        qml/bci/paradigms/components/IndustrialIconButton.qml
+        qml/bci/paradigms/components/LiveMetric.qml
+        qml/bci/paradigms/components/SignalInfoItem.qml
+        qml/bci/paradigms/components/StatDetail.qml
+        qml/bci/paradigms/components/PerformanceGauge.qml
+        qml/bci/paradigms/components/SSVEPPerformanceMetrics.qml
+        qml/bci/paradigms/components/FrequencyAccuracy.qml
+        qml/bci/paradigms/components/FrequencySpectrum.qml
+        qml/bci/paradigms/components/PerformanceMetric.qml
+        qml/bci/paradigms/components/SummaryItem.qml
+        qml/bci/paradigms/components/SSVEPTarget.qml
+        qml/bci/paradigms/components/MotorImageryExperimentController.qml
+        qml/bci/paradigms/components/MotorImageryEEGVisualizer.qml
+        qml/bci/paradigms/components/MotorImageryControlPanel.qml
+        qml/bci/paradigms/components/MotorImageryPerformanceMetrics.qml
+        qml/bci/paradigms/components/CSPPatternsVisualizer.qml
+
+
+
+
 )
 
 # منابع استاتیک

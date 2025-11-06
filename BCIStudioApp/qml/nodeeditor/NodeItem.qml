@@ -177,45 +177,12 @@ Rectangle {
                     theme: nodeItem.theme
                     onConnectionStarted: (port, mouse) => {
                         console.log("🔗 Input port connection started:", port.name)
-                        var globalPos = mapToItem(nodeItem.parent, mouse.x, mouse.y)
+                        var globalPos = mapToItem(null, mouse.x, mouse.y)
                         nodeItem.connectionStarted(port, globalPos)
                     }
                     onConnectionFinished: (port) => {
                         console.log("🔗 Input port connection finished:", port.name)
                         nodeItem.connectionFinished(port)
-                    }
-                }
-            }
-        }
-
-        // Node body - parameters
-        Rectangle {
-            Layout.fillWidth: true
-            implicitHeight: parametersColumn.height + 12
-            color: Qt.darker(theme.backgroundCard, 1.05)
-            radius: 6
-            visible: parametersColumn.visible
-
-            ColumnLayout {
-                id: parametersColumn
-                width: parent.width - 12
-                anchors.centerIn: parent
-                spacing: 6
-
-                Repeater {
-                    model: nodeModel ? getVisibleParameters(nodeModel.parameters) : []
-
-                    delegate: ParameterRow {
-                        Layout.fillWidth: true
-                        parameterName: modelData.name
-                        parameterValue: modelData.value
-                        parameterType: modelData.type
-                        parameterOptions: modelData.options
-                        onValueChanged: (newValue) => {
-                            if (nodeModel && nodeModel.updateParameter) {
-                                nodeModel.updateParameter(modelData.name, newValue)
-                            }
-                        }
                     }
                 }
             }
@@ -248,7 +215,7 @@ Rectangle {
                     theme: nodeItem.theme
                     onConnectionStarted: (port, mouse) => {
                         console.log("🔗 Output port connection started:", port.name)
-                        var globalPos = mapToItem(nodeItem.parent, mouse.x, mouse.y)
+                        var globalPos = mapToItem(null, mouse.x, mouse.y)
                         nodeItem.connectionStarted(port, globalPos)
                     }
                     onConnectionFinished: (port) => {
@@ -336,20 +303,20 @@ Rectangle {
     // Helper functions
     function getInputPorts(ports) {
         if (!ports) return []
-        return ports.filter(port => port.direction === 0 || port.direction === "input")
+        return ports.filter(port => port.direction === "input")
     }
 
     function getOutputPorts(ports) {
         if (!ports) return []
-        return ports.filter(port => port.direction === 1 || port.direction === "output")
+        return ports.filter(port => port.direction === "output")
     }
 
-    function getPortPosition(portId, isInput) {
+    function getPortGlobalPosition(portId, isInput) {
         var ports = isInput ? inputPorts : outputPorts
         for (var i = 0; i < ports.count; i++) {
             var portItem = ports.itemAt(i)
             if (portItem && portItem.portModel && portItem.portModel.portId === portId) {
-                var portCenter = portItem.mapToItem(nodeItem.parent,
+                var portCenter = portItem.mapToItem(null,
                     portItem.portCircle.x + portItem.portCircle.width/2,
                     portItem.portCircle.y + portItem.portCircle.height/2)
                 return portCenter
@@ -389,23 +356,6 @@ Rectangle {
         return colors[status] || theme.textTertiary
     }
 
-    function getVisibleParameters(parameters) {
-        if (!parameters) return []
-        var visibleParams = []
-        for (var key in parameters) {
-            if (parameters[key].visible !== false) {
-                visibleParams.push({
-                    name: key,
-                    value: parameters[key].value,
-                    type: parameters[key].type || typeof parameters[key].value,
-                    options: parameters[key].options,
-                    description: parameters[key].description
-                })
-            }
-        }
-        return visibleParams
-    }
-
     // Function to update node status
     function updateStatus(newStatus) {
         if (nodeModel) {
@@ -442,16 +392,6 @@ Rectangle {
         }
     }
 
-    // Debug information
-    Text {
-        anchors.top: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-        text: Math.round(parent.x) + "," + Math.round(parent.y)
-        color: "red"
-        font.pixelSize: 9
-        visible: false // Set to true for debugging
-    }
-
     Component.onCompleted: {
         console.log("🎯 NodeItem created:", nodeId, nodeModel ? nodeModel.name : "Unknown")
         console.log("📊 Node ports:", nodeModel && nodeModel.ports ? nodeModel.ports.length : 0)
@@ -461,4 +401,3 @@ Rectangle {
         console.log("🗑️ NodeItem destroyed:", nodeId)
     }
 }
-

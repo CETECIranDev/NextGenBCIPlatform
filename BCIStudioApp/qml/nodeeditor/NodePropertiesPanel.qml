@@ -1,18 +1,36 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import QtQuick.Window 2.15
 import Qt5Compat.GraphicalEffects
-
 
 Rectangle {
     id: propertiesPanel
     color: theme.backgroundSecondary
     border.color: theme.border
     border.width: 1
+    radius: 12
 
     property var selectedNode: null
     property var nodeGraph: null
-    property var theme: ({})
+    property var theme: ({
+        "backgroundPrimary": "#FFFFFF",
+        "backgroundSecondary": "#F8F9FA",
+        "backgroundTertiary": "#E9ECEF",
+        "backgroundCard": "#FFFFFF",
+        "primary": "#4361EE",
+        "secondary": "#3A0CA3",
+        "accent": "#7209B7",
+        "success": "#4CC9F0",
+        "warning": "#F72585",
+        "error": "#EF476F",
+        "info": "#4895EF",
+        "textPrimary": "#212529",
+        "textSecondary": "#6C757D",
+        "textTertiary": "#ADB5BD",
+        "textDisabled": "#CED4DA",
+        "border": "#DEE2E6"
+    })
     property bool hasChanges: false
 
     signal propertyChanged(string nodeId, string propertyName, var value)
@@ -26,8 +44,8 @@ Rectangle {
     layer.effect: DropShadow {
         transparentBorder: true
         horizontalOffset: 0
-        verticalOffset: 2
-        radius: 8
+        verticalOffset: 4
+        radius: 12
         samples: 17
         color: "#20000000"
     }
@@ -39,48 +57,51 @@ Rectangle {
         // Header با طراحی مدرن
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 70
-            color: theme.backgroundTertiary
+            Layout.preferredHeight: 80
+            color: theme.backgroundCard
             radius: 12
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 16
+                anchors.margins: 20
                 spacing: 8
 
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 12
+                    spacing: 16
 
+                    // Icon Container
                     Rectangle {
-                        width: 40
-                        height: 40
-                        radius: 8
+                        width: 48
+                        height: 48
+                        radius: 12
                         color: theme.primary
                         Layout.alignment: Qt.AlignVCenter
 
                         Text {
-                            text: "⚙️"
-                            font.pixelSize: 18
+                            text: selectedNode ? selectedNode.icon : "⚙️"
+                            font.pixelSize: 20
                             color: "white"
                             anchors.centerIn: parent
                         }
                     }
 
+                    // Title and Info
                     ColumnLayout {
-                        spacing: 2
+                        spacing: 4
                         Layout.fillWidth: true
 
                         Text {
-                            text: "Node Properties"
+                            text: selectedNode ? selectedNode.name : "No Node Selected"
                             color: theme.textPrimary
                             font.family: "Segoe UI Semibold"
-                            font.pixelSize: 16
+                            font.pixelSize: 18
                             font.weight: Font.DemiBold
+                            elide: Text.ElideRight
                         }
 
                         Text {
-                            text: selectedNode ? selectedNode.name : "No node selected"
+                            text: selectedNode ? selectedNode.category : "Select a node to view properties"
                             color: theme.textSecondary
                             font.family: "Segoe UI"
                             font.pixelSize: 12
@@ -90,37 +111,105 @@ Rectangle {
 
                     // Action Buttons
                     RowLayout {
-                        spacing: 6
+                        spacing: 8
                         Layout.alignment: Qt.AlignVCenter
 
-                        CustomActionButton {
-                            buttonIcon: "📋"
-                            tooltipText: "Duplicate Node"
-                            enabled: selectedNode !== null
-                            onClicked: propertiesPanel.nodeDuplicated(selectedNode.nodeId)
-                        }
+                        // Duplicate Button
+                        Rectangle {
+                            width: 36
+                            height: 36
+                            radius: 8
+                            color: theme.backgroundTertiary
+                            Layout.alignment: Qt.AlignVCenter
 
-                        CustomActionButton {
-                            buttonIcon: selectedNode && selectedNode.enabled === false ? "✅" : "⏸️"
-                            tooltipText: selectedNode && selectedNode.enabled === false ? "Enable Node" : "Disable Node"
-                            enabled: selectedNode !== null
-                            isAccent: selectedNode && selectedNode.enabled === false
-                            onClicked: {
-                                if (selectedNode.enabled === false) {
-                                    propertiesPanel.nodeEnabled(selectedNode.nodeId)
-                                } else {
-                                    propertiesPanel.nodeDisabled(selectedNode.nodeId)
+                            Text {
+                                text: "📋"
+                                font.pixelSize: 16
+                                color: theme.textPrimary
+                                anchors.centerIn: parent
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    if (selectedNode) {
+                                        propertiesPanel.nodeDuplicated(selectedNode.nodeId)
+                                    }
                                 }
+                            }
+
+                            ToolTip {
+                                text: "Duplicate Node"
+                                delay: 500
                             }
                         }
 
-                        CustomActionButton {
-                            buttonIcon: "🗑️"
-                            tooltipText: "Delete Node"
-                            enabled: selectedNode !== null
-                            isAccent: true
-                            onClicked: {
-                                deleteConfirmationDialog.open()
+                        // Enable/Disable Button
+                        Rectangle {
+                            width: 36
+                            height: 36
+                            radius: 8
+                            color: selectedNode && selectedNode.enabled === false ? theme.success : theme.warning
+                            Layout.alignment: Qt.AlignVCenter
+                            opacity: selectedNode ? 1.0 : 0.3
+
+                            Text {
+                                text: selectedNode && selectedNode.enabled === false ? "✅" : "⏸️"
+                                font.pixelSize: 16
+                                color: "white"
+                                anchors.centerIn: parent
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: selectedNode ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                onClicked: {
+                                    if (selectedNode) {
+                                        if (selectedNode.enabled === false) {
+                                            propertiesPanel.nodeEnabled(selectedNode.nodeId)
+                                        } else {
+                                            propertiesPanel.nodeDisabled(selectedNode.nodeId)
+                                        }
+                                    }
+                                }
+                            }
+
+                            ToolTip {
+                                text: selectedNode && selectedNode.enabled === false ? "Enable Node" : "Disable Node"
+                                delay: 500
+                            }
+                        }
+
+                        // Delete Button
+                        Rectangle {
+                            width: 36
+                            height: 36
+                            radius: 8
+                            color: theme.error
+                            Layout.alignment: Qt.AlignVCenter
+                            opacity: selectedNode ? 1.0 : 0.3
+
+                            Text {
+                                text: "🗑️"
+                                font.pixelSize: 16
+                                color: "white"
+                                anchors.centerIn: parent
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: selectedNode ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                onClicked: {
+                                    if (selectedNode) {
+                                        deleteConfirmationDialog.open()
+                                    }
+                                }
+                            }
+
+                            ToolTip {
+                                text: "Delete Node"
+                                delay: 500
                             }
                         }
                     }
@@ -138,7 +227,7 @@ Rectangle {
                         text: "● Unsaved Changes"
                         color: theme.warning
                         font.family: "Segoe UI"
-                        font.pixelSize: 9
+                        font.pixelSize: 10
                         font.weight: Font.Medium
                         anchors.centerIn: parent
                     }
@@ -154,162 +243,271 @@ Rectangle {
 
             ColumnLayout {
                 width: parent.width
-                spacing: 16
-                anchors.margins: 16
+                spacing: 20
+                anchors.margins: 20
 
                 // Empty State
-                EmptyStatePanel {
-                    visible: !selectedNode
-                    emptyTitle: "Select a Node"
-                    emptyDescription: "Click on any node in the canvas to view and edit its properties"
-                    emptyIcon: "🎯"
+                Item {
                     Layout.fillWidth: true
-                    Layout.topMargin: 40
+                    Layout.fillHeight: true
+                    visible: !selectedNode
+
+                    ColumnLayout {
+                        anchors.centerIn: parent
+                        spacing: 20
+                        width: parent.width * 0.8
+
+                        // Icon
+                        Rectangle {
+                            width: 80
+                            height: 80
+                            radius: 40
+                            color: theme.backgroundTertiary
+                            Layout.alignment: Qt.AlignCenter
+
+                            Text {
+                                text: "🎯"
+                                font.pixelSize: 32
+                                color: theme.textTertiary
+                                anchors.centerIn: parent
+                            }
+                        }
+
+                        // Text
+                        ColumnLayout {
+                            spacing: 8
+                            Layout.alignment: Qt.AlignCenter
+
+                            Text {
+                                text: "Select a Node"
+                                color: theme.textPrimary
+                                font.family: "Segoe UI Semibold"
+                                font.pixelSize: 18
+                                font.weight: Font.DemiBold
+                                Layout.alignment: Qt.AlignCenter
+                            }
+
+                            Text {
+                                text: "Click on any node in the canvas to view and edit its properties"
+                                color: theme.textSecondary
+                                font.family: "Segoe UI"
+                                font.pixelSize: 14
+                                horizontalAlignment: Text.AlignHCenter
+                                wrapMode: Text.WordWrap
+                                Layout.fillWidth: true
+                            }
+                        }
+                    }
                 }
 
                 // Node Content
                 ColumnLayout {
                     visible: selectedNode !== null
-                    spacing: 16
+                    spacing: 20
                     Layout.fillWidth: true
 
-                    // Node Info Card
-                    InfoCard {
-                        title: "NODE INFO"
-                        icon: "📄"
-                        cardColor: theme.info
+                    // Node Info Section
+                    ColumnLayout {
+                        spacing: 16
                         Layout.fillWidth: true
 
-                        ColumnLayout {
-                            width: parent.width
-                            spacing: 12
+                        // Section Header
+                        Text {
+                            text: "NODE INFORMATION"
+                            color: theme.textSecondary
+                            font.family: "Segoe UI"
+                            font.pixelSize: 12
+                            font.weight: Font.Medium
+                            Layout.fillWidth: true
+                        }
 
-                            RowLayout {
-                                spacing: 12
-                                Layout.fillWidth: true
+                        // Info Card
+                        Rectangle {
+                            Layout.fillWidth: true
+                            height: infoContent.height + 24
+                            radius: 12
+                            color: theme.backgroundCard
+                            border.color: theme.border
+                            border.width: 1
 
-                                Rectangle {
-                                    width: 48
-                                    height: 48
-                                    radius: 8
-                                    color: getCategoryColor(selectedNode ? selectedNode.category : "")
+                            ColumnLayout {
+                                id: infoContent
+                                width: parent.width - 24
+                                anchors.centerIn: parent
+                                spacing: 16
 
-                                    Text {
-                                        text: selectedNode ? selectedNode.icon : "🧩"
-                                        font.pixelSize: 20
-                                        color: "white"
-                                        anchors.centerIn: parent
+                                // Main Info Row
+                                RowLayout {
+                                    spacing: 16
+                                    Layout.fillWidth: true
+
+                                    // Category Icon
+                                    Rectangle {
+                                        width: 60
+                                        height: 60
+                                        radius: 12
+                                        color: getCategoryColor(selectedNode ? selectedNode.category : "")
+
+                                        Text {
+                                            text: selectedNode ? selectedNode.icon : "🧩"
+                                            font.pixelSize: 24
+                                            color: "white"
+                                            anchors.centerIn: parent
+                                        }
+                                    }
+
+                                    // Text Info
+                                    ColumnLayout {
+                                        spacing: 6
+                                        Layout.fillWidth: true
+
+                                        Text {
+                                            text: selectedNode ? selectedNode.name : "Unknown"
+                                            color: theme.textPrimary
+                                            font.family: "Segoe UI Semibold"
+                                            font.pixelSize: 16
+                                            font.weight: Font.DemiBold
+                                            elide: Text.ElideRight
+                                        }
+
+                                        Text {
+                                            text: selectedNode ? selectedNode.category : "Unknown"
+                                            color: getCategoryColor(selectedNode ? selectedNode.category : "")
+                                            font.family: "Segoe UI"
+                                            font.pixelSize: 12
+                                            font.weight: Font.Medium
+                                        }
+
+                                        Text {
+                                            text: selectedNode ? (selectedNode.description || "No description available") : "No description"
+                                            color: theme.textSecondary
+                                            font.family: "Segoe UI"
+                                            font.pixelSize: 11
+                                            wrapMode: Text.WordWrap
+                                            Layout.fillWidth: true
+                                        }
                                     }
                                 }
 
-                                ColumnLayout {
-                                    spacing: 4
+                                // Status Grid
+                                GridLayout {
+                                    columns: 2
+                                    columnSpacing: 20
+                                    rowSpacing: 12
                                     Layout.fillWidth: true
 
-                                    Text {
-                                        text: selectedNode ? selectedNode.name : "Unknown"
-                                        color: theme.textPrimary
-                                        font.family: "Segoe UI Semibold"
-                                        font.pixelSize: 16
-                                        font.weight: Font.DemiBold
-                                        elide: Text.ElideRight
+                                    // Status
+                                    StatusItem {
+                                        label: "Status"
+                                        value: getStatusText(selectedNode ? selectedNode.status : 0)
+                                        color: getStatusColor(selectedNode ? selectedNode.status : 0)
+                                        icon: getStatusIcon(selectedNode ? selectedNode.status : 0)
                                     }
 
-                                    Text {
-                                        text: selectedNode ? selectedNode.category : "Unknown"
-                                        color: getCategoryColor(selectedNode ? selectedNode.category : "")
-                                        font.family: "Segoe UI"
-                                        font.pixelSize: 12
-                                        font.weight: Font.Medium
+                                    // Enabled
+                                    StatusItem {
+                                        label: "Enabled"
+                                        value: selectedNode && selectedNode.enabled === false ? "Disabled" : "Enabled"
+                                        color: selectedNode && selectedNode.enabled === false ? theme.error : theme.success
+                                        icon: selectedNode && selectedNode.enabled === false ? "❌" : "✅"
                                     }
 
-                                    Text {
-                                        text: selectedNode ? selectedNode.description : "No description"
-                                        color: theme.textSecondary
-                                        font.family: "Segoe UI"
-                                        font.pixelSize: 11
-                                        wrapMode: Text.WordWrap
+                                    // Node ID
+                                    StatusItem {
+                                        label: "Node ID"
+                                        value: selectedNode ? selectedNode.nodeId.substring(0, 8) + "..." : "N/A"
+                                        color: theme.textTertiary
+                                        icon: "🆔"
+                                        Layout.columnSpan: 2
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Ports Section
+                    ColumnLayout {
+                        spacing: 16
+                        Layout.fillWidth: true
+                        visible: portsRepeater.count > 0
+
+                        // Section Header
+                        Text {
+                            text: "PORTS"
+                            color: theme.textSecondary
+                            font.family: "Segoe UI"
+                            font.pixelSize: 12
+                            font.weight: Font.Medium
+                            Layout.fillWidth: true
+                        }
+
+                        // Ports Card
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: portsColumn.height + 24
+                            radius: 12
+                            color: theme.backgroundCard
+                            border.color: theme.border
+                            border.width: 1
+
+                            ColumnLayout {
+                                id: portsColumn
+                                width: parent.width - 24
+                                anchors.centerIn: parent
+                                spacing: 12
+
+                                Repeater {
+                                    id: portsRepeater
+                                    model: selectedNode ? getPorts(selectedNode) : []
+
+                                    delegate: PortItem {
+                                        portName: modelData.name
+                                        portType: modelData.dataType
+                                        portDirection: modelData.direction
+                                        isConnected: modelData.connected || false
                                         Layout.fillWidth: true
                                     }
                                 }
                             }
-
-                            // Status & ID
-                            GridLayout {
-                                columns: 2
-                                columnSpacing: 16
-                                rowSpacing: 8
-                                Layout.fillWidth: true
-
-                                StatusBadge {
-                                    badgeLabel: "Status"
-                                    badgeValue: getStatusText(selectedNode ? selectedNode.status : 0)
-                                    badgeColor: getStatusColor(selectedNode ? selectedNode.status : 0)
-                                    badgeIcon: getStatusIcon(selectedNode ? selectedNode.status : 0)
-                                }
-
-                                StatusBadge {
-                                    badgeLabel: "Enabled"
-                                    badgeValue: selectedNode && selectedNode.enabled === false ? "Disabled" : "Enabled"
-                                    badgeColor: selectedNode && selectedNode.enabled === false ? theme.error : theme.success
-                                    badgeIcon: selectedNode && selectedNode.enabled === false ? "❌" : "✅"
-                                }
-
-                                StatusBadge {
-                                    badgeLabel: "Node ID"
-                                    badgeValue: selectedNode ? selectedNode.nodeId.substring(0, 8) + "..." : "N/A"
-                                    badgeColor: theme.textTertiary
-                                    badgeIcon: "🆔"
-                                    Layout.columnSpan: 2
-                                }
-                            }
                         }
                     }
 
-                    // Ports Card
-                    InfoCard {
-                        title: "PORTS"
-                        icon: "🔌"
-                        cardColor: theme.secondary
-                        visible: portsRepeater.count > 0
+                    // Parameters Section
+                    ColumnLayout {
+                        spacing: 16
                         Layout.fillWidth: true
-
-                        ColumnLayout {
-                            width: parent.width
-                            spacing: 8
-
-                            Repeater {
-                                id: portsRepeater
-                                model: selectedNode ? getPorts(selectedNode) : []
-
-                                delegate: PortItem {
-                                    portName: modelData.name
-                                    portType: modelData.dataType
-                                    portDirection: modelData.direction
-                                    isConnected: modelData.connected || false
-                                    Layout.fillWidth: true
-                                }
-                            }
-                        }
-                    }
-
-                    // Parameters Card
-                    InfoCard {
-                        title: "PARAMETERS"
-                        icon: "🎛️"
-                        cardColor: theme.primary
                         visible: parametersRepeater.count > 0
-                        Layout.fillWidth: true
 
-                        ColumnLayout {
-                            width: parent.width
-                            spacing: 12
+                        // Section Header
+                        Text {
+                            text: "PARAMETERS"
+                            color: theme.textSecondary
+                            font.family: "Segoe UI"
+                            font.pixelSize: 12
+                            font.weight: Font.Medium
+                            Layout.fillWidth: true
+                        }
 
-                            Repeater {
-                                id: parametersRepeater
-                                model: selectedNode ? getEditableParameters(selectedNode.parameters) : []
+                        // Parameters Card
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: parametersColumn.height + 24
+                            radius: 12
+                            color: theme.backgroundCard
+                            border.color: theme.border
+                            border.width: 1
 
-                                delegate: ParameterEditor {
+                            ColumnLayout {
+                                id: parametersColumn
+                                width: parent.width - 24
+                                anchors.centerIn: parent
+                                spacing: 16
+
+                                Repeater {
+                                    id: parametersRepeater
+                                    model: selectedNode ? getEditableParameters(selectedNode.parameters) : []
+
+                                    delegate: ParameterEditor {
                                         paramName: modelData.name
                                         paramValue: modelData.value
                                         paramType: modelData.type
@@ -323,89 +521,116 @@ Rectangle {
                                         paramReadOnly: modelData.readOnly || false
                                         Layout.fillWidth: true
 
-                                    onValueChanged: (newValue) => {
-                                        propertiesPanel.hasChanges = true
-                                        propertiesPanel.propertyChanged(selectedNode.nodeId, modelData.name, newValue)
+                                        onValueChanged: (newValue) => {
+                                            propertiesPanel.hasChanges = true
+                                            propertiesPanel.propertyChanged(selectedNode.nodeId, modelData.name, newValue)
+                                        }
                                     }
                                 }
                             }
                         }
                     }
 
-                    // Documentation Card
-                    InfoCard {
-                        title: "DOCUMENTATION"
-                        icon: "📖"
-                        cardColor: theme.warning
-                        visible: selectedNode && selectedNode.documentation
+                    // Documentation Section
+                    ColumnLayout {
+                        spacing: 16
                         Layout.fillWidth: true
+                        visible: selectedNode && selectedNode.documentation
 
+                        // Section Header
                         Text {
-                            text: selectedNode ? selectedNode.documentation : ""
+                            text: "DOCUMENTATION"
                             color: theme.textSecondary
                             font.family: "Segoe UI"
-                            font.pixelSize: 11
-                            wrapMode: Text.WordWrap
-                            lineHeight: 1.4
+                            font.pixelSize: 12
+                            font.weight: Font.Medium
                             Layout.fillWidth: true
+                        }
+
+                        // Documentation Card
+                        Rectangle {
+                            Layout.fillWidth: true
+                            implicitHeight: docText.height + 24
+                            radius: 12
+                            color: theme.backgroundCard
+                            border.color: theme.border
+                            border.width: 1
+
+                            Text {
+                                id: docText
+                                text: selectedNode ? selectedNode.documentation : ""
+                                color: theme.textSecondary
+                                font.family: "Segoe UI"
+                                font.pixelSize: 12
+                                wrapMode: Text.WordWrap
+                                lineHeight: 1.4
+                                width: parent.width - 24
+                                anchors.centerIn: parent
+                            }
                         }
                     }
 
                     // Action Buttons
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: 8
+                        spacing: 12
                         visible: selectedNode !== null
 
-                        // Reset Button با آیکون متن
-                        Button {
-                            text: "↶ Reset"
-                            enabled: hasChanges
+                        // Reset Button
+                        Rectangle {
                             Layout.fillWidth: true
-                            onClicked: {
-                                propertiesPanel.resetChanges()
-                            }
+                            height: 40
+                            radius: 8
+                            color: "transparent"
+                            border.color: theme.border
+                            border.width: 1
+                            opacity: hasChanges ? 1.0 : 0.5
 
-                            background: Rectangle {
-                                color: "transparent"
-                                border.color: theme.border
-                                border.width: 1
-                                radius: 6
-                            }
-
-                            contentItem: Text {
-                                text: parent.text
-                                color: theme.textPrimary
+                            Text {
+                                text: "↶ Reset Changes"
+                                color: hasChanges ? theme.textPrimary : theme.textDisabled
                                 font.family: "Segoe UI"
-                                font.pixelSize: 12
+                                font.pixelSize: 14
                                 font.weight: Font.Medium
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
+                                anchors.centerIn: parent
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: hasChanges ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                onClicked: {
+                                    if (hasChanges) {
+                                        propertiesPanel.resetChanges()
+                                    }
+                                }
                             }
                         }
 
-                        // Apply Button با آیکون متن
-                        Button {
-                            text: "✓ Apply"
-                            enabled: hasChanges
+                        // Apply Button
+                        Rectangle {
                             Layout.fillWidth: true
-                            onClicked: {
-                                propertiesPanel.applyChanges()
-                            }
+                            height: 40
+                            radius: 8
+                            color: hasChanges ? theme.success : theme.backgroundTertiary
+                            opacity: hasChanges ? 1.0 : 0.5
 
-                            background: Rectangle {
-                                color: theme.success
-                                radius: 6
-                            }
-
-                            contentItem: Text {
-                                text: parent.text
-                                color: "white"
+                            Text {
+                                text: "✓ Apply Changes"
+                                color: hasChanges ? "white" : theme.textDisabled
                                 font.family: "Segoe UI"
-                                font.pixelSize: 12
+                                font.pixelSize: 14
                                 font.weight: Font.Medium
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
+                                anchors.centerIn: parent
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: hasChanges ? Qt.PointingHandCursor : Qt.ArrowCursor
+                                onClicked: {
+                                    if (hasChanges) {
+                                        propertiesPanel.applyChanges()
+                                    }
+                                }
                             }
                         }
                     }
@@ -415,518 +640,574 @@ Rectangle {
     }
 
     // Confirmation Dialog for Delete
-    Dialog {
+    Popup {
         id: deleteConfirmationDialog
-        title: "Delete Node"
+        width: 400
+        height: 200
         modal: true
-        standardButtons: Dialog.Yes | Dialog.No
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
         anchors.centerIn: Overlay.overlay
 
         background: Rectangle {
             color: theme.backgroundCard
-            radius: 12
+            radius: 16
             border.color: theme.border
+            border.width: 1
         }
 
         ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 24
             spacing: 16
 
+            // Header
+            RowLayout {
+                spacing: 12
+                Layout.fillWidth: true
+
+                Rectangle {
+                    width: 40
+                    height: 40
+                    radius: 20
+                    color: theme.error
+
+                    Text {
+                        text: "⚠️"
+                        font.pixelSize: 20
+                        anchors.centerIn: parent
+                    }
+                }
+
+                Text {
+                    text: "Delete Node"
+                    color: theme.textPrimary
+                    font.family: "Segoe UI Semibold"
+                    font.pixelSize: 18
+                    font.weight: Font.DemiBold
+                    Layout.fillWidth: true
+                }
+            }
+
+            // Message
             Text {
-                text: "Are you sure you want to delete this node?"
-                color: theme.textPrimary
+                text: "Are you sure you want to delete this node? This action cannot be undone."
+                color: theme.textSecondary
                 font.family: "Segoe UI"
                 font.pixelSize: 14
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
+                Layout.fillHeight: true
             }
 
-            Text {
-                text: "This action cannot be undone."
-                color: theme.error
-                font.family: "Segoe UI"
-                font.pixelSize: 12
-                font.weight: Font.Medium
-                Layout.fillWidth: true
-            }
-        }
-
-        onAccepted: {
-            propertiesPanel.nodeDeleted(selectedNode.nodeId)
-        }
-    }
-
-    // کامپوننت‌های سفارشی
-    // کامپوننت کارت اطلاعات
-    Rectangle {
-        id: infoCardComponent
-        visible: false
-    }
-
-    // کامپوننت دکمه اقدام
-    Rectangle {
-        id: customActionButtonComponent
-        visible: false
-    }
-
-    // کامپوننت وضعیت خالی
-    Rectangle {
-        id: emptyStateComponent
-        visible: false
-    }
-
-    // کامپوننت نشان وضعیت
-    Rectangle {
-        id: statusBadgeComponent
-        visible: false
-    }
-
-    // کامپوننت آیتم پورت
-    Rectangle {
-        id: portItemComponent
-        visible: false
-    }
-
-    // کامپوننت ویرایشگر پارامتر
-    Rectangle {
-        id: parameterEditorComponent
-        visible: false
-    }
-
-    // تعاریف کامپوننت‌ها
-    Component {
-        id: infoCardComp
-
-        Rectangle {
-            property string cardTitle: ""
-            property string cardIcon: ""
-            property color cardColor: theme.primary
-
-            Layout.fillWidth: true
-            implicitHeight: content.height + 24
-            radius: 8
-            color: theme.backgroundCard
-            border.color: theme.border
-            border.width: 1
-
-            ColumnLayout {
-                id: content
-                width: parent.width - 24
-                anchors.centerIn: parent
+            // Buttons
+            RowLayout {
                 spacing: 12
+                Layout.fillWidth: true
 
-                // Header
-                RowLayout {
-                    spacing: 8
+                // Cancel Button
+                Rectangle {
                     Layout.fillWidth: true
-
-                    Rectangle {
-                        width: 24
-                        height: 24
-                        radius: 6
-                        color: cardColor
-
-                        Text {
-                            text: cardIcon
-                            font.pixelSize: 12
-                            color: "white"
-                            anchors.centerIn: parent
-                        }
-                    }
+                    height: 40
+                    radius: 8
+                    color: theme.backgroundTertiary
 
                     Text {
-                        text: cardTitle
+                        text: "Cancel"
                         color: theme.textPrimary
-                        font.family: "Segoe UI Semibold"
-                        font.pixelSize: 12
-                        font.weight: Font.DemiBold
-                        Layout.fillWidth: true
+                        font.family: "Segoe UI"
+                        font.pixelSize: 14
+                        font.weight: Font.Medium
+                        anchors.centerIn: parent
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: deleteConfirmationDialog.close()
                     }
                 }
 
-                // Content
-                ColumnLayout {
-                    spacing: 8
+                // Delete Button
+                Rectangle {
                     Layout.fillWidth: true
+                    height: 40
+                    radius: 8
+                    color: theme.error
+
+                    Text {
+                        text: "Delete"
+                        color: "white"
+                        font.family: "Segoe UI"
+                        font.pixelSize: 14
+                        font.weight: Font.Medium
+                        anchors.centerIn: parent
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            propertiesPanel.nodeDeleted(selectedNode.nodeId)
+                            deleteConfirmationDialog.close()
+                        }
+                    }
                 }
             }
         }
     }
 
-    Component {
-        id: customActionButtonComp
+    // کامپوننت Status Item
+    component StatusItem: RowLayout {
+        property string label: ""
+        property string value: ""
+        property color color: theme.textPrimary
+        property string icon: ""
 
-        Rectangle {
-            property string buttonIcon: ""
-            property string tooltipText: ""
-            property bool enabled: true
-            property bool isAccent: false
+        spacing: 8
+        Layout.fillWidth: true
 
-            width: 32
-            height: 32
-            radius: 6
-            color: mouseArea.containsPress ?
-                   (isAccent ? Qt.darker(theme.error, 1.2) : Qt.darker(theme.primary, 1.2)) :
-                   (mouseArea.containsMouse ?
-                    (isAccent ? Qt.lighter(theme.error, 1.1) : Qt.lighter(theme.primary, 1.1)) :
-                    (isAccent ? theme.error : theme.backgroundTertiary))
-            opacity: enabled ? 1.0 : 0.3
-
-            Text {
-                text: buttonIcon
-                font.pixelSize: 12
-                color: "white"
-                anchors.centerIn: parent
-            }
-
-            MouseArea {
-                id: mouseArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: parent.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                onClicked: if (parent.enabled) parent.clicked()
-            }
-
-            ToolTip {
-                text: tooltipText
-                visible: mouseArea.containsMouse && parent.enabled
-            }
-
-            signal clicked()
-
-            Behavior on color {
-                ColorAnimation { duration: 200 }
-            }
+        Text {
+            text: parent.icon
+            font.pixelSize: 14
+            color: parent.color
+            Layout.alignment: Qt.AlignVCenter
         }
-    }
-
-    Component {
-        id: emptyStatePanelComp
 
         ColumnLayout {
-            property string emptyTitle: ""
-            property string emptyDescription: ""
-            property string emptyIcon: ""
-
-            spacing: 16
-
-            Rectangle {
-                width: 80
-                height: 80
-                radius: 40
-                color: theme.backgroundTertiary
-                Layout.alignment: Qt.AlignCenter
-
-                Text {
-                    text: emptyIcon
-                    font.pixelSize: 32
-                    color: theme.textTertiary
-                    anchors.centerIn: parent
-                }
-            }
-
-            ColumnLayout {
-                spacing: 4
-                Layout.alignment: Qt.AlignCenter
-
-                Text {
-                    text: emptyTitle
-                    color: theme.textPrimary
-                    font.family: "Segoe UI Semibold"
-                    font.pixelSize: 16
-                    font.weight: Font.DemiBold
-                    Layout.alignment: Qt.AlignCenter
-                }
-
-                Text {
-                    text: emptyDescription
-                    color: theme.textTertiary
-                    font.family: "Segoe UI"
-                    font.pixelSize: 12
-                    horizontalAlignment: Text.AlignHCenter
-                    wrapMode: Text.WordWrap
-                    Layout.preferredWidth: 200
-                }
-            }
-        }
-    }
-
-    Component {
-        id: statusBadgeComp
-
-        RowLayout {
-            property string badgeLabel: ""
-            property string badgeValue: ""
-            property color badgeColor: theme.primary
-            property string badgeIcon: ""
-
-            spacing: 6
+            spacing: 2
+            Layout.fillWidth: true
 
             Text {
-                text: badgeIcon
-                font.pixelSize: 12
-                color: badgeColor
-            }
-
-            Text {
-                text: badgeLabel + ":"
+                text: parent.parent.label
                 color: theme.textSecondary
                 font.family: "Segoe UI"
                 font.pixelSize: 11
             }
 
             Text {
-                text: badgeValue
-                color: badgeColor
+                text: parent.parent.value
+                color: parent.parent.color
                 font.family: "Segoe UI"
-                font.pixelSize: 11
+                font.pixelSize: 12
                 font.weight: Font.Medium
-                Layout.fillWidth: true
+                elide: Text.ElideRight
             }
         }
     }
 
-    Component {
-        id: portItemComp
+    // کامپوننت Port Item
+    component PortItem: RowLayout {
+        property string portName: ""
+        property string portType: ""
+        property string portDirection: "input"
+        property bool isConnected: false
 
-        RowLayout {
-            property string portName: ""
-            property string portType: ""
-            property string portDirection: "input" // "input" or "output"
-            property bool isConnected: false
+        spacing: 12
+        Layout.fillWidth: true
 
-            spacing: 8
+        // Port Circle
+        Rectangle {
+            width: 16
+            height: 16
+            radius: 8
+            color: getPortColor()
+            border.color: theme.border
+            border.width: 1
+            Layout.alignment: Qt.AlignVCenter
 
+            // Connection Indicator
             Rectangle {
                 width: 8
                 height: 8
                 radius: 4
-                color: getPortColor(portType)
-                border.color: theme.border
-                border.width: 1
-                Layout.alignment: Qt.AlignVCenter
-            }
-
-            ColumnLayout {
-                spacing: 1
-                Layout.fillWidth: true
-
-                Text {
-                    text: portName
-                    color: theme.textPrimary
-                    font.family: "Segoe UI"
-                    font.pixelSize: 12
-                    elide: Text.ElideRight
-                }
-
-                Text {
-                    text: getDataTypeAbbreviation(portType)
-                    color: theme.textTertiary
-                    font.family: "Segoe UI"
-                    font.pixelSize: 9
-                }
-            }
-
-            RowLayout {
-                spacing: 4
-                Layout.alignment: Qt.AlignVCenter
-
-                Rectangle {
-                    width: 6
-                    height: 6
-                    radius: 3
-                    color: isConnected ? theme.success : theme.textDisabled
-                }
-
-                Text {
-                    text: portDirection === "input" ? "IN" : "OUT"
-                    color: theme.textTertiary
-                    font.family: "Segoe UI"
-                    font.pixelSize: 9
-                    font.weight: Font.Medium
-                }
+                color: isConnected ? theme.success : theme.textDisabled
+                anchors.centerIn: parent
+                visible: isConnected
             }
         }
-    }
 
-    Component {
-        id: parameterEditorComp
-
+        // Port Info
         ColumnLayout {
-            property string paramName: ""
-            property var paramValue
-            property string paramType: "string"
-            property var paramOptions: []
-            property real paramMin: 0
-            property real paramMax: 100
-            property real paramStep: 1
-            property string paramDescription: ""
-
-            signal valueChanged(var newValue)
-
-            spacing: 6
+            spacing: 2
+            Layout.fillWidth: true
 
             Text {
-                text: paramName
-                color: theme.textSecondary
+                text: portName
+                color: theme.textPrimary
                 font.family: "Segoe UI"
                 font.pixelSize: 12
-                Layout.fillWidth: true
-            }
-
-            Loader {
-                sourceComponent: getEditorComponent()
-                Layout.fillWidth: true
+                elide: Text.ElideRight
             }
 
             Text {
-                text: paramDescription
+                text: getDataTypeAbbreviation(portType)
                 color: theme.textTertiary
                 font.family: "Segoe UI"
                 font.pixelSize: 10
-                wrapMode: Text.WordWrap
-                visible: paramDescription !== ""
+            }
+        }
+
+        // Direction Indicator
+        Text {
+            text: portDirection === "input" ? "← IN" : "OUT →"
+            color: theme.textTertiary
+            font.family: "Segoe UI"
+            font.pixelSize: 10
+            font.weight: Font.Medium
+            Layout.alignment: Qt.AlignVCenter
+        }
+
+        function getPortColor() {
+            var colors = {
+                "EEGSignal": theme.primary,
+                "ECGSignal": theme.secondary,
+                "EMGSignal": theme.accent,
+                "FeatureVector": theme.success,
+                "ClassificationResult": theme.warning,
+                "ControlSignal": theme.info,
+                "SignalData": theme.error
+            }
+            return colors[portType] || theme.textTertiary
+        }
+
+        function getDataTypeAbbreviation(dataType) {
+            var abbreviations = {
+                "EEGSignal": "EEG",
+                "ECGSignal": "ECG",
+                "EMGSignal": "EMG",
+                "FeatureVector": "FEAT",
+                "ClassificationResult": "CLASS",
+                "ControlSignal": "CTRL",
+                "SignalData": "SIG"
+            }
+            return abbreviations[dataType] || dataType
+        }
+    }
+
+    // کامپوننت Parameter Editor
+    component ParameterEditor: ColumnLayout {
+        property string paramName: ""
+        property var paramValue
+        property string paramType: "string"
+        property var paramOptions: []
+        property real paramMin: 0
+        property real paramMax: 100
+        property real paramStep: 1
+        property string paramDescription: ""
+        property string paramUnit: ""
+        property bool paramAdvanced: false
+        property bool paramReadOnly: false
+
+        signal valueChanged(var newValue)
+
+        spacing: 8
+        Layout.fillWidth: true
+
+        // Parameter Header
+        RowLayout {
+            spacing: 8
+            Layout.fillWidth: true
+
+            Text {
+                text: paramName
+                color: theme.textPrimary
+                font.family: "Segoe UI"
+                font.pixelSize: 14
+                font.weight: Font.Medium
                 Layout.fillWidth: true
             }
 
-            function getEditorComponent() {
-                switch(paramType) {
-                    case "number": return numberEditorComponent
-                    case "boolean": return booleanEditorComponent
-                    case "string": return stringEditorComponent
-                    case "options": return optionsEditorComponent
-                    default: return stringEditorComponent
+            Text {
+                text: paramAdvanced ? "ADVANCED" : ""
+                color: theme.warning
+                font.family: "Segoe UI"
+                font.pixelSize: 10
+                font.weight: Font.Medium
+                visible: paramAdvanced
+            }
+        }
+
+        // Editor based on type
+        Loader {
+            sourceComponent: getEditorComponent()
+            Layout.fillWidth: true
+        }
+
+        // Description
+        Text {
+            text: paramDescription
+            color: theme.textSecondary
+            font.family: "Segoe UI"
+            font.pixelSize: 11
+            wrapMode: Text.WordWrap
+            visible: paramDescription !== ""
+            Layout.fillWidth: true
+        }
+
+        function getEditorComponent() {
+            switch(paramType) {
+                case "number": return numberEditorComponent
+                case "boolean": return booleanEditorComponent
+                case "string": return stringEditorComponent
+                case "options": return optionsEditorComponent
+                default: return stringEditorComponent
+            }
+        }
+    }
+
+    // Number Editor Component
+    Component {
+        id: numberEditorComponent
+
+        ColumnLayout {
+            spacing: 8
+
+            // Slider and Input
+            RowLayout {
+                spacing: 12
+                Layout.fillWidth: true
+
+                Slider {
+                    id: slider
+                    from: parent.parent.paramMin
+                    to: parent.parent.paramMax
+                    value: parent.parent.paramValue || 0
+                    stepSize: parent.parent.paramStep
+                    Layout.fillWidth: true
+                    enabled: !parent.parent.paramReadOnly
+
+                    background: Rectangle {
+                        x: slider.leftPadding
+                        y: slider.topPadding + slider.availableHeight / 2 - height / 2
+                        implicitWidth: 200
+                        implicitHeight: 4
+                        width: slider.availableWidth
+                        height: implicitHeight
+                        radius: 2
+                        color: theme.border
+
+                        Rectangle {
+                            width: slider.visualPosition * parent.width
+                            height: parent.height
+                            color: theme.primary
+                            radius: 2
+                        }
+                    }
+
+                    handle: Rectangle {
+                        x: slider.leftPadding + slider.visualPosition * (slider.availableWidth - width)
+                        y: slider.topPadding + slider.availableHeight / 2 - height / 2
+                        implicitWidth: 20
+                        implicitHeight: 20
+                        radius: 10
+                        color: slider.pressed ? theme.primary : theme.backgroundCard
+                        border.color: theme.primary
+                        border.width: 2
+                    }
+
+                    onMoved: {
+                        parent.parent.valueChanged(value)
+                    }
+                }
+
+                // Number Input
+                Rectangle {
+                    width: 80
+                    height: 36
+                    radius: 6
+                    color: theme.backgroundPrimary
+                    border.color: theme.border
+                    border.width: 1
+
+                    TextInput {
+                        anchors.fill: parent
+                        anchors.margins: 8
+                        text: slider.value.toFixed(2)
+                        color: theme.textPrimary
+                        font.family: "Segoe UI"
+                        font.pixelSize: 12
+                        verticalAlignment: Text.AlignVCenter
+                        validator: DoubleValidator {
+                            bottom: slider.from
+                            top: slider.to
+                        }
+                        readOnly: parent.parent.parent.paramReadOnly
+
+                        onEditingFinished: {
+                            var newValue = Number(text)
+                            if (!isNaN(newValue)) {
+                                slider.value = newValue
+                                parent.parent.parent.valueChanged(newValue)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Min/Max Labels
+            RowLayout {
+                Layout.fillWidth: true
+
+                Text {
+                    text: parent.parent.paramMin
+                    color: theme.textTertiary
+                    font.family: "Segoe UI"
+                    font.pixelSize: 10
+                }
+
+                Text {
+                    text: parent.parent.paramUnit || ""
+                    color: theme.textTertiary
+                    font.family: "Segoe UI"
+                    font.pixelSize: 10
+                    Layout.alignment: Qt.AlignHCenter
+                }
+
+                Text {
+                    text: parent.parent.paramMax
+                    color: theme.textTertiary
+                    font.family: "Segoe UI"
+                    font.pixelSize: 10
+                    Layout.alignment: Qt.AlignRight
                 }
             }
         }
     }
 
-    // کامپوننت‌های ادیتور پارامتر
+    // Boolean Editor Component
     Component {
-        id: numberEditorComponent
+        id: booleanEditorComponent
 
         RowLayout {
-            Slider {
-                id: slider
-                from: parent.parent.paramMin
-                to: parent.parent.paramMax
-                value: parent.parent.paramValue || 0
-                stepSize: parent.parent.paramStep
-                Layout.fillWidth: true
+            spacing: 12
 
-                onMoved: {
-                    parent.parent.valueChanged(value)
+            // Toggle Switch
+            Rectangle {
+                width: 50
+                height: 24
+                radius: 12
+                color: (parent.parent.paramValue ? theme.success : theme.backgroundTertiary)
+                Layout.alignment: Qt.AlignVCenter
+
+                Rectangle {
+                    x: parent.parent.paramValue ? parent.width - width - 2 : 2
+                    y: 2
+                    width: 20
+                    height: 20
+                    radius: 10
+                    color: "white"
+                    Behavior on x { NumberAnimation { duration: 200 } }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: parent.parent.parent.paramReadOnly ? Qt.ArrowCursor : Qt.PointingHandCursor
+                    onClicked: {
+                        if (!parent.parent.parent.paramReadOnly) {
+                            var newValue = !parent.parent.paramValue
+                            parent.parent.valueChanged(newValue)
+                        }
+                    }
                 }
             }
 
-            TextField {
-                text: slider.value.toFixed(2)
+            Text {
+                text: parent.parent.paramValue ? "Enabled" : "Disabled"
+                color: theme.textPrimary
                 font.family: "Segoe UI"
-                font.pixelSize: 11
-                Layout.preferredWidth: 60
-                validator: DoubleValidator {
-                    bottom: slider.from
-                    top: slider.to
-                }
-                background: Rectangle {
-                    color: theme.backgroundPrimary
-                    radius: 3
-                    border.color: parent.activeFocus ? theme.primary : theme.border
-                    border.width: 1
-                }
+                font.pixelSize: 12
+                Layout.alignment: Qt.AlignVCenter
+            }
+        }
+    }
+
+    // String Editor Component
+    Component {
+        id: stringEditorComponent
+
+        Rectangle {
+            height: 36
+            radius: 6
+            color: theme.backgroundPrimary
+            border.color: theme.border
+            border.width: 1
+            Layout.fillWidth: true
+
+            TextInput {
+                anchors.fill: parent
+                anchors.margins: 8
+                text: parent.parent.parent.paramValue !== undefined ? String(parent.parent.parent.paramValue) : ""
+                color: theme.textPrimary
+                font.family: "Segoe UI"
+                font.pixelSize: 12
+                verticalAlignment: Text.AlignVCenter
+                readOnly: parent.parent.parent.paramReadOnly
+
                 onEditingFinished: {
-                    var newValue = Number(text)
-                    if (!isNaN(newValue)) {
-                        slider.value = newValue
-                        parent.parent.valueChanged(newValue)
+                    if (!parent.parent.parent.paramReadOnly) {
+                        parent.parent.parent.valueChanged(text)
                     }
                 }
             }
         }
     }
 
-    Component {
-        id: booleanEditorComponent
-
-        CheckBox {
-            checked: parent.parent.paramValue || false
-            font.family: "Segoe UI"
-            font.pixelSize: 12
-            onCheckedChanged: {
-                parent.parent.valueChanged(checked)
-            }
-        }
-    }
-
-    Component {
-        id: stringEditorComponent
-
-        TextField {
-            text: parent.parent.paramValue !== undefined ? parent.parent.paramValue : ""
-            font.family: "Segoe UI"
-            font.pixelSize: 11
-            Layout.fillWidth: true
-            background: Rectangle {
-                color: theme.backgroundPrimary
-                radius: 3
-                border.color: parent.activeFocus ? theme.primary : theme.border
-                border.width: 1
-            }
-            onEditingFinished: {
-                parent.parent.valueChanged(text)
-            }
-        }
-    }
-
+    // Options Editor Component
     Component {
         id: optionsEditorComponent
 
-        ComboBox {
-            model: parent.parent.paramOptions || []
-            currentIndex: model.indexOf(parent.parent.paramValue)
-            font.family: "Segoe UI"
-            font.pixelSize: 11
+        Rectangle {
+            height: 36
+            radius: 6
+            color: theme.backgroundPrimary
+            border.color: theme.border
+            border.width: 1
             Layout.fillWidth: true
-            background: Rectangle {
-                color: theme.backgroundPrimary
-                radius: 3
-                border.color: parent.activeFocus ? theme.primary : theme.border
-                border.width: 1
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.margins: 8
+
+                Text {
+                    text: parent.parent.parent.paramValue !== undefined ? String(parent.parent.parent.paramValue) : ""
+                    color: theme.textPrimary
+                    font.family: "Segoe UI"
+                    font.pixelSize: 12
+                    Layout.fillWidth: true
+                }
+
+                Text {
+                    text: "▼"
+                    color: theme.textTertiary
+                    font.pixelSize: 10
+                }
             }
-            onActivated: {
-                parent.parent.valueChanged(model[currentIndex])
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: parent.parent.parent.paramReadOnly ? Qt.ArrowCursor : Qt.PointingHandCursor
+                onClicked: {
+                    if (!parent.parent.parent.paramReadOnly) {
+                        optionsMenu.popup()
+                    }
+                }
+            }
+
+            Menu {
+                id: optionsMenu
+
+                Repeater {
+                    model: parent.parent.parent.paramOptions || []
+
+                    delegate: MenuItem {
+                        text: modelData
+                        onTriggered: {
+                            parent.parent.parent.parent.valueChanged(modelData)
+                        }
+                    }
+                }
             }
         }
-    }
-
-    // Loaderها برای کامپوننت‌های داینامیک
-    Loader {
-        id: infoCardLoader
-        sourceComponent: infoCardComp
-    }
-
-    Loader {
-        id: customActionButtonLoader
-        sourceComponent: customActionButtonComp
-    }
-
-    Loader {
-        id: emptyStatePanelLoader
-        sourceComponent: emptyStatePanelComp
-    }
-
-    Loader {
-        id: statusBadgeLoader
-        sourceComponent: statusBadgeComp
-    }
-
-    Loader {
-        id: portItemLoader
-        sourceComponent: portItemComp
-    }
-
-    Loader {
-        id: parameterEditorLoader
-        sourceComponent: parameterEditorComp
     }
 
     // توابع کمکی
@@ -979,34 +1260,6 @@ Rectangle {
         }
     }
 
-    function getPortColor(dataType) {
-        var colors = {
-            "EEGSignal": "#6C63FF",
-            "ECGSignal": "#EF476F",
-            "EMGSignal": "#06D6A0",
-            "FeatureVector": "#FFD166",
-            "ClassificationResult": "#7209B7",
-            "ControlSignal": "#F15BB5",
-            "SignalData": "#118AB2",
-            "MatrixData": "#4ECDC4"
-        }
-        return colors[dataType] || theme.primary
-    }
-
-    function getDataTypeAbbreviation(dataType) {
-        var abbreviations = {
-            "EEGSignal": "EEG",
-            "ECGSignal": "ECG",
-            "EMGSignal": "EMG",
-            "FeatureVector": "FEAT",
-            "ClassificationResult": "CLASS",
-            "ControlSignal": "CTRL",
-            "SignalData": "SIG",
-            "MatrixData": "MAT"
-        }
-        return abbreviations[dataType] || "??"
-    }
-
     function getEditableParameters(parameters) {
         if (!parameters) return []
         var editable = []
@@ -1020,7 +1273,10 @@ Rectangle {
                     min: parameters[key].min,
                     max: parameters[key].max,
                     step: parameters[key].step,
-                    description: parameters[key].description
+                    description: parameters[key].description,
+                    unit: parameters[key].unit,
+                    advanced: parameters[key].advanced,
+                    readOnly: parameters[key].readOnly
                 })
             }
         }
@@ -1029,15 +1285,17 @@ Rectangle {
 
     function resetChanges() {
         hasChanges = false
-        // Reset parameter values to original
+        // در اینجا باید مقادیر پارامترها به حالت اولیه بازگردند
+        console.log("Changes reset")
     }
 
     function applyChanges() {
         hasChanges = false
-        // Apply changes to node
+        // در اینجا تغییرات اعمال می‌شوند
+        console.log("Changes applied")
     }
 
     Component.onCompleted: {
-        console.log("NodePropertiesPanel initialized with modern design")
+        console.log("NodePropertiesPanel initialized with modern flat design")
     }
 }

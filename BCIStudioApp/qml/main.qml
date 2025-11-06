@@ -208,6 +208,35 @@ ApplicationWindow {
                         // Node Editor
                         NodeEditorView {
                             id: nodeEditor
+                            visible: mainContent.currentIndex === 1
+                            enabled: mainContent.currentIndex === 1
+
+                            // اضافه کردن propertyهای لازم برای ارتباط
+                            property var nodeGraphManager: appController ? appController.nodeGraphManager : null
+                            property var nodeRegistry: appController ? appController.nodeRegistry : null
+                            property var pipelineValidator: appController ? appController.pipelineValidator : null
+
+                            // سیگنال‌های مورد نیاز
+                            onNodeCreated: (nodeData) => {
+                                console.log("Node created:", nodeData)
+                                if (appController && appController.nodeGraphManager) {
+                                    appController.nodeGraphManager.addNode(nodeData)
+                                }
+                            }
+
+                            onGraphModified: () => {
+                                console.log("Graph modified")
+                                if (appController) {
+                                    appController.setHasUnsavedChanges(true)
+                                }
+                            }
+
+                            onExecutionInitiated: () => {
+                                console.log("Execution started")
+                                if (appController) {
+                                    appController.executePipeline()
+                                }
+                            }
                         }
 
                         // Dashboard

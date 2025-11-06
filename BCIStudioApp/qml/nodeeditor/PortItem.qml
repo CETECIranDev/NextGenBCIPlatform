@@ -43,6 +43,14 @@ Rectangle {
         "brainWaveDelta": "#9C27B0",
         "brainWaveGamma": "#F44336"
     })
+    // در ابتدای PortItem.qml این propertyها را اضافه کنید
+    property string portId: portModel ? portModel.portId : ("port_" + Math.random().toString(36).substr(2, 9))
+    property alias portCircle: portCircle // برای دسترسی از خارج
+
+    // تابع برای گرفتن موقعیت مرکز پورت
+    function getCenterPosition() {
+        return mapToItem(null, portCircle.x + portCircle.width/2, portCircle.y + portCircle.height/2)
+    }
 
     // سیگنال‌ها
     signal connectionStarted(var port, var mouse)
@@ -571,11 +579,11 @@ Rectangle {
         return thisDataType === otherDataType
     }
 
-    // تابع برای گرفتن موقعیت مرکز پورت
-    function getCenterPosition() {
-        var circleCenter = Qt.point(portCircle.width / 2, portCircle.height / 2)
-        return portCircle.mapToItem(portItem.parent, circleCenter.x, circleCenter.y)
-    }
+    // // تابع برای گرفتن موقعیت مرکز پورت
+    // function getCenterPosition() {
+    //     var circleCenter = Qt.point(portCircle.width / 2, portCircle.height / 2)
+    //     return portCircle.mapToItem(portItem.parent, circleCenter.x, circleCenter.y)
+    // }
 
     Component.onCompleted: {
         if (portModel) {

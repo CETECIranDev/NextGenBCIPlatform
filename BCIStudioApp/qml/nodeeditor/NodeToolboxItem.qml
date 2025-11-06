@@ -1,111 +1,97 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
 
+// NodeToolbox.qml - کامپوننت NodeToolboxItem را با این کد جایگزین کنید
 Rectangle {
-    id: toolboxItem
-    height: 80
-    radius: 8
-    color: theme.backgroundCard
-    border.color: theme.border
-    border.width: 1
-
     property string nodeType: ""
-    property string nodeName: "Node"
-    property string nodeIcon: "⚙️"
-    property string nodeDescription: "Description"
-    property string nodeCategory: "General"
-    property color nodeColor: theme.primary
+    property string nodeName: ""
+    property string nodeIcon: ""
+    property string nodeDescription: ""
+    property color nodeColor: "gray"
+    property var theme: nodeToolbox.theme
 
-    signal dragStarted(var mouse)
+    signal dragStarted(string nodeType, var mouse)
 
-    MouseArea {
-        id: dragArea
-        anchors.fill: parent
-        drag.target: undefined // We'll handle drag manually
-        cursorShape: Qt.PointingHandCursor
+    width: parent.width
+    height: 60
+    color: mouseArea.containsMouse ? Qt.rgba(nodeColor.r, nodeColor.g, nodeColor.b, 0.1) : "transparent"
 
-        onPressed: {
-            // Create drag image
-            toolboxItem.dragStarted(mouse)
-        }
-
-        Rectangle {
-            anchors.fill: parent
-            radius: parent.radius
-            color: theme.primary
-            opacity: parent.pressed ? 0.1 : parent.containsMouse ? 0.05 : 0
-            Behavior on opacity { NumberAnimation { duration: 150 } }
-        }
-    }
-
-    Column {
+    RowLayout {
         anchors.fill: parent
         anchors.margins: 8
-        spacing: 4
+        spacing: 10
 
-        // Header
-        Row {
-            width: parent.width
-            spacing: 8
+        Rectangle {
+            width: 36
+            height: 36
+            radius: 8
+            color: nodeColor
+            Layout.alignment: Qt.AlignVCenter
 
-            // Icon
-            Rectangle {
-                width: 32
-                height: 32
-                radius: 6
-                color: toolboxItem.nodeColor
-                opacity: 0.9
-
-                Text {
-                    text: toolboxItem.nodeIcon
-                    font.pixelSize: 14
-                    anchors.centerIn: parent
-                }
-            }
-
-            // Text content
-            Column {
-                width: parent.width - 48
-                spacing: 2
-
-                Text {
-                    text: toolboxItem.nodeName
-                    color: theme.textPrimary
-                    font.family: "Segoe UI"
-                    font.pixelSize: 12
-                    font.bold: true
-                    elide: Text.ElideRight
-                    width: parent.width
-                }
-
-                Text {
-                    text: toolboxItem.nodeDescription
-                    color: theme.textSecondary
-                    font.family: "Segoe UI"
-                    font.pixelSize: 9
-                    wrapMode: Text.Wrap
-                    maximumLineCount: 2
-                    elide: Text.ElideRight
-                    width: parent.width
-                    lineHeight: 1.2
-                }
+            Text {
+                text: nodeIcon
+                font.pixelSize: 16
+                color: "white"
+                anchors.centerIn: parent
             }
         }
 
-        // Footer with category
-        Text {
-            text: toolboxItem.nodeCategory
-            color: theme.textTertiary
-            font.family: "Segoe UI"
-            font.pixelSize: 8
-            font.bold: true
+        ColumnLayout {
+            spacing: 2
+            Layout.fillWidth: true
+
+            Text {
+                text: nodeName
+                color: theme.textPrimary
+                font.family: "Segoe UI"
+                font.pixelSize: 12
+                font.bold: true
+                elide: Text.ElideRight
+            }
+
+            Text {
+                text: nodeDescription
+                color: theme.textSecondary
+                font.family: "Segoe UI"
+                font.pixelSize: 10
+                wrapMode: Text.WordWrap
+                maximumLineCount: 2
+                elide: Text.ElideRight
+            }
         }
     }
 
-    // Tooltip
-    ToolTip {
-        visible: dragArea.containsMouse && !dragArea.pressed
-        delay: 500
-        text: toolboxItem.nodeName + "\n" + toolboxItem.nodeDescription + "\n\nCategory: " + toolboxItem.nodeCategory
+    // سیستم Drag کاملاً ساده‌شده
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        drag.threshold: 1
+
+        onPressed: (mouse) => {
+            console.log("🖱️ Mouse pressed on node:", nodeType, "at:", mouse.x, mouse.y);
+
+            // استفاده از موقعیت نسبی ساده
+            var relativeMouse = {
+                x: mouse.x,
+                y: mouse.y,
+                source: "toolbox"
+            };
+
+            parent.dragStarted(nodeType, relativeMouse);
+        }
+
+        onPositionChanged: (mouse) => {
+            if (pressed) {
+                // آپدیت موقعیت در حین درگ
+                console.log("📍 Dragging at relative position:", mouse.x, mouse.y);
+            }
+        }
+
+        onReleased: {
+            console.log("🖱️ Mouse released");
+        }
     }
 }

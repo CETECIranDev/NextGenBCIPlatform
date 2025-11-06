@@ -11,7 +11,7 @@ Rectangle {
     color: appTheme.backgroundPrimary
 
     // Properties
-    property var currentNodeGraph: nodeGraphManager.currentGraph
+    property var currentNodeGraph: nodeGraphManager ? nodeGraphManager.currentGraph : null
     property var selectedNode: null
     property var selectedNodes: []
     property bool isDraggingNode: false
@@ -23,6 +23,11 @@ Rectangle {
     property bool isCreatingNode: false
     property string draggingNodeType: ""
     property var nodePreview: null
+
+    // External dependencies
+    property var nodeGraphManager: null
+    property var nodeRegistry: null
+    property var pipelineValidator: null
 
     // Theme Manager
     property var appTheme: {
@@ -92,6 +97,35 @@ Rectangle {
         }
     }
 
+    // Global Mouse Area for Drag Handling
+    MouseArea {
+        id: globalMouseArea
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton
+        hoverEnabled: true
+        propagateComposedEvents: true
+
+        onPositionChanged: (mouse) => {
+            if (nodeEditorView.isDraggingNode) {
+                nodeEditorView.handleDragMove(mouse.x, mouse.y);
+            }
+        }
+
+        onReleased: (mouse) => {
+            if (nodeEditorView.isDraggingNode) {
+                // Check if drop is on canvas
+                var canvasPos = nodeCanvas.mapFromItem(nodeEditorView, mouse.x, mouse.y);
+                if (canvasPos.x >= 0 && canvasPos.x <= nodeCanvas.width &&
+                    canvasPos.y >= 0 && canvasPos.y <= nodeCanvas.height) {
+                    nodeEditorView.handleDrop(mouse.x, mouse.y);
+                } else {
+                    console.log("❌ Drop cancelled - outside canvas");
+                    nodeEditorView.cleanupDrag();
+                }
+            }
+        }
+    }
+
     // Main Layout
     RowLayout {
         anchors.fill: parent
@@ -105,9 +139,12 @@ Rectangle {
             Layout.maximumWidth: 400
             Layout.fillHeight: true
             theme: appTheme
+            z: 10
 
             onNodeDragStarted: (nodeType, mouse) => {
-                nodeEditorView.startNodeCreation(nodeType, mouse)
+                console.log("🔄 Node drag started from toolbox:", nodeType);
+                var globalPos = nodeToolbox.mapToItem(nodeEditorView, mouse.x, mouse.y);
+                nodeEditorView.startNodeDrag(nodeType, globalPos);
             }
 
             onCategorySelected: (category) => {
@@ -163,51 +200,19 @@ Rectangle {
                 onToggleRightSidebar: nodeEditorView.rightSidebarCollapsed = !nodeEditorView.rightSidebarCollapsed
             }
 
-            // Node Canvas Area
+            // Node Canvas Container
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 color: "transparent"
+                clip: true
 
-                // Drop Area for new nodes
-                DropArea {
-                    id: canvasDropArea
-                    anchors.fill: parent
-                    keys: ["node/new"]
-
-                    onDropped: (drop) => {
-                        if (drop.keys.indexOf("node/new") !== -1) {
-                            var canvasPos = nodeCanvas.mapFromItem(null, drop.x, drop.y)
-                            var graphPos = nodeCanvas.screenToGraphPosition(canvasPos.x, canvasPos.y)
-                            nodeEditorView.finishNodeCreation(graphPos)
-                        }
-                    }
-
-                    onPositionChanged: (drag) => {
-                        if (nodeEditorView.isCreatingNode && nodeEditorView.nodePreview) {
-                            var canvasPos = nodeCanvas.mapFromItem(null, drag.x, drag.y)
-                            nodeEditorView.nodePreview.x = canvasPos.x - nodeEditorView.nodePreview.width / 2
-                            nodeEditorView.nodePreview.y = canvasPos.y - nodeEditorView.nodePreview.height / 2
-                        }
-                    }
-
-                    onEntered: {
-                        if (nodeEditorView.isCreatingNode) {
-                            nodeEditorView.nodePreview.opacity = 0.8
-                        }
-                    }
-
-                    onExited: {
-                        if (nodeEditorView.isCreatingNode) {
-                            nodeEditorView.nodePreview.opacity = 0.4
-                        }
-                    }
-                }
-
+                // Node Canvas
                 NodeCanvas {
                     id: nodeCanvas
                     anchors.fill: parent
                     theme: appTheme
+                    z: 1
 
                     nodeGraph: nodeEditorView.currentNodeGraph
                     selectedNode: nodeEditorView.selectedNode
@@ -263,14 +268,14 @@ Rectangle {
                     }
 
                     onCanvasRightClicked: (mouseX, mouseY) => {
-                        canvasContextMenu.clickPos = nodeCanvas.screenToGraphPosition(mouseX, mouseY)
-                        canvasContextMenu.open(mouseX, mouseY)
+                        var graphPos = nodeCanvas.calculateScreenToGraphPosition(mouseX, mouseY);
+                        canvasContextMenu.clickPos = graphPos;
+                        canvasContextMenu.open(mouseX, mouseY);
                     }
 
                     onCanvasDoubleClicked: (mouseX, mouseY) => {
-                        var graphPos = nodeCanvas.screenToGraphPosition(mouseX, mouseY)
-                        console.log("Canvas double clicked at:", graphPos)
-                        // می‌توانید ایجاد نود سریع را اینجا اضافه کنید
+                        var graphPos = nodeCanvas.calculateScreenToGraphPosition(mouseX, mouseY);
+                        console.log("Canvas double clicked at:", graphPos);
                     }
 
                     onViewChanged: {
@@ -278,76 +283,50 @@ Rectangle {
                     }
                 }
 
-                // Node Preview during drag
-                Loader {
-                    id: nodePreviewLoader
-                    active: nodeEditorView.isCreatingNode
+                // Drop Area for new nodes
+                DropArea {
+                    id: canvasDropArea
+                    anchors.fill: parent
+                    keys: ["node/new"]
+                    enabled: true
+                    z: 2
+
+                    onEntered: (drag) => {
+                        console.log("📍 Drag entered canvas area");
+                        if (drag.keys.indexOf("node/new") !== -1) {
+                            drag.accept();
+                        }
+                    }
+
+                    onDropped: (drop) => {
+                        console.log("🎯 Drop occurred at:", drop.x, drop.y);
+                        if (drop.keys.indexOf("node/new") !== -1) {
+                            var nodeType = drop.getDataAsString("node/type");
+                            if (nodeType) {
+                                var graphPos = nodeCanvas.calculateScreenToGraphPosition(drop.x, drop.y);
+                                console.log("📐 Creating node at graph position:", graphPos.x, graphPos.y);
+                                nodeEditorView.createNodeAtPosition(nodeType, graphPos);
+                            }
+                        }
+                    }
                 }
 
-                // Execution Overlay
-                Rectangle {
-                    id: executionOverlay
+                // Canvas Mouse Area for Drag Tracking
+                MouseArea {
                     anchors.fill: parent
-                    color: "#80000000"
-                    visible: nodeEditorView.isExecuting
-                    z: 1000
+                    acceptedButtons: Qt.LeftButton
+                    hoverEnabled: true
+                    z: 3
 
-                    ColumnLayout {
-                        anchors.centerIn: parent
-                        spacing: 20
-
-                        BusyIndicator {
-                            id: executionSpinner
-                            running: nodeEditorView.isExecuting
-                            width: 60
-                            height: 60
-                            Layout.alignment: Qt.AlignHCenter
+                    onPositionChanged: (mouse) => {
+                        if (nodeEditorView.isDraggingNode) {
+                            nodeEditorView.handleDragMove(mouse.x, mouse.y);
                         }
+                    }
 
-                        Text {
-                            text: "Executing BCI Pipeline..."
-                            color: "white"
-                            font.family: "Segoe UI"
-                            font.pixelSize: 16
-                            font.bold: true
-                            Layout.alignment: Qt.AlignHCenter
-                        }
-
-                        ProgressBar {
-                            id: progressBar
-                            width: 300
-                            value: nodeEditorView.executionProgress
-                            Layout.alignment: Qt.AlignHCenter
-
-                            background: Rectangle {
-                                color: "#e0e0e0"
-                                radius: 3
-                            }
-
-                            contentItem: Rectangle {
-                                color: appTheme.primary
-                                radius: 3
-                            }
-                        }
-
-                        Button {
-                            text: "Stop Execution"
-                            Layout.alignment: Qt.AlignHCenter
-                            onClicked: nodeEditorView.stopExecution()
-
-                            background: Rectangle {
-                                color: appTheme.error
-                                radius: 6
-                            }
-
-                            contentItem: Text {
-                                text: parent.text
-                                color: "white"
-                                font.family: "Segoe UI"
-                                font.pixelSize: 12
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
+                    onReleased: (mouse) => {
+                        if (nodeEditorView.isDraggingNode) {
+                            nodeEditorView.handleDrop(mouse.x, mouse.y);
                         }
                     }
                 }
@@ -362,6 +341,7 @@ Rectangle {
             Layout.maximumWidth: 500
             Layout.fillHeight: true
             color: "transparent"
+            z: 5
 
             TabBar {
                 id: propertiesTabBar
@@ -621,7 +601,9 @@ Rectangle {
         onSelectAll: nodeCanvas.selectAllNodes()
         onDeselectAll: nodeCanvas.deselectAllNodes()
         onCreateNode: (nodeType) => {
-            nodeEditorView.createNodeAt(nodeType, canvasContextMenu.clickPos)
+            var centerPos = Qt.point(nodeCanvas.width / 2, nodeCanvas.height / 2);
+            var graphPos = nodeCanvas.calculateScreenToGraphPosition(centerPos.x, centerPos.y);
+            nodeEditorView.createNodeAtPosition(nodeType, graphPos);
         }
         onImportGraph: fileDialog.open()
         onExportGraph: saveDialog.open()
@@ -732,6 +714,74 @@ Rectangle {
         }
     }
 
+    // Execution Overlay
+    Rectangle {
+        id: executionOverlay
+        anchors.fill: parent
+        color: "#80000000"
+        visible: nodeEditorView.isExecuting
+        z: 1000
+
+        ColumnLayout {
+            anchors.centerIn: parent
+            spacing: 20
+
+            BusyIndicator {
+                id: executionSpinner
+                running: nodeEditorView.isExecuting
+                width: 60
+                height: 60
+                Layout.alignment: Qt.AlignHCenter
+            }
+
+            Text {
+                text: "Executing BCI Pipeline..."
+                color: "white"
+                font.family: "Segoe UI"
+                font.pixelSize: 16
+                font.bold: true
+                Layout.alignment: Qt.AlignHCenter
+            }
+
+            ProgressBar {
+                id: progressBar
+                width: 300
+                value: nodeEditorView.executionProgress
+                Layout.alignment: Qt.AlignHCenter
+
+                background: Rectangle {
+                    color: "#e0e0e0"
+                    radius: 3
+                }
+
+                contentItem: Rectangle {
+                    color: appTheme.primary
+                    radius: 3
+                }
+            }
+
+            Button {
+                text: "Stop Execution"
+                Layout.alignment: Qt.AlignHCenter
+                onClicked: nodeEditorView.stopExecution()
+
+                background: Rectangle {
+                    color: appTheme.error
+                    radius: 6
+                }
+
+                contentItem: Text {
+                    text: parent.text
+                    color: "white"
+                    font.family: "Segoe UI"
+                    font.pixelSize: 12
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+            }
+        }
+    }
+
     // کامپوننت‌های کمکی
     component InfoItem: RowLayout {
         property string label: ""
@@ -771,68 +821,152 @@ Rectangle {
         }
     }
 
-    // Functions
-    function startNodeCreation(nodeType, mouse) {
-        nodeEditorView.isCreatingNode = true
-        nodeEditorView.draggingNodeType = nodeType
+    // کامپوننت پیش‌نمایش نود
+    Component {
+        id: nodePreviewComponent
 
-        // ایجاد پیش‌نمایش نود
+        Rectangle {
+            id: nodePreview
+            property string nodeType: ""
+            width: 120
+            height: 60
+            color: Qt.rgba(0.2, 0.4, 0.8, 0.7)
+            radius: 8
+            border.color: "white"
+            border.width: 2
+            z: 1000
+
+            // دنبال کردن ماوس
+            Behavior on x {
+                NumberAnimation { duration: 50 }
+            }
+            Behavior on y {
+                NumberAnimation { duration: 50 }
+            }
+
+            Row {
+                anchors.centerIn: parent
+                spacing: 8
+
+                Text {
+                    text: nodeEditorView.getNodeIcon(nodeType)
+                    font.pixelSize: 16
+                    color: "white"
+                }
+
+                Text {
+                    text: nodeEditorView.getNodeName(nodeType)
+                    color: "white"
+                    font.family: "Segoe UI"
+                    font.pixelSize: 11
+                    font.bold: true
+                }
+            }
+
+            // نشانگر موقعیت
+            Text {
+                anchors.top: parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: Math.round(parent.x) + "," + Math.round(parent.y)
+                color: "red"
+                font.pixelSize: 9
+                visible: false
+            }
+        }
+    }
+
+    // توابع Drag & Drop
+    function startNodeDrag(nodeType, mousePos) {
+        console.log("🚀 Starting node drag:", nodeType, "at:", mousePos.x, mousePos.y);
+
+        nodeEditorView.isDraggingNode = true;
+        nodeEditorView.draggingNodeType = nodeType;
+
+        // ایجاد پیش‌نمایش
         nodeEditorView.nodePreview = nodePreviewComponent.createObject(nodeCanvas, {
             nodeType: nodeType,
-            x: mouse.x - 60,
-            y: mouse.y - 30
-        })
+            x: mousePos.x - 60,
+            y: mousePos.y - 30,
+            z: 1000
+        });
+
+        console.log("✅ Preview created");
     }
 
-    function finishNodeCreation(position) {
-        if (nodeEditorView.isCreatingNode && nodeEditorView.draggingNodeType) {
-            var node = nodeEditorView.createNodeAt(nodeEditorView.draggingNodeType, position)
-            if (node) {
-                nodeEditorView.nodeCreated(node)
-                nodeEditorView.selectedNode = node
-                nodeEditorView.selectedNodes = [node]
-                nodeEditorView.graphModified()
-            }
-        }
-        nodeEditorView.cleanupNodeCreation()
-    }
-
-    function cleanupNodeCreation() {
-        nodeEditorView.isCreatingNode = false
-        nodeEditorView.draggingNodeType = ""
-        if (nodeEditorView.nodePreview) {
-            nodeEditorView.nodePreview.destroy()
-            nodeEditorView.nodePreview = null
+    function handleDragMove(mouseX, mouseY) {
+        if (nodeEditorView.isDraggingNode && nodeEditorView.nodePreview) {
+            // آپدیت موقعیت پیش‌نمایش
+            var canvasPos = nodeCanvas.mapFromItem(nodeEditorView, mouseX, mouseY);
+            nodeEditorView.nodePreview.x = canvasPos.x - nodeEditorView.nodePreview.width / 2;
+            nodeEditorView.nodePreview.y = canvasPos.y - nodeEditorView.nodePreview.height / 2;
         }
     }
 
-    function createNodeAt(nodeType, position) {
+    function handleDrop(mouseX, mouseY) {
+        if (nodeEditorView.isDraggingNode && nodeEditorView.draggingNodeType) {
+            var canvasPos = nodeCanvas.mapFromItem(nodeEditorView, mouseX, mouseY);
+            var graphPos = nodeCanvas.calculateScreenToGraphPosition(canvasPos.x, canvasPos.y);
+
+            console.log("🎯 Final drop position:", graphPos.x, graphPos.y);
+            nodeEditorView.createNodeAtPosition(nodeEditorView.draggingNodeType, graphPos);
+        }
+        nodeEditorView.cleanupDrag();
+    }
+
+    function createNodeAtPosition(nodeType, position) {
+        console.log("🔧 Creating node:", nodeType, "at:", position.x, position.y);
+
+        // اعتبارسنجی موقعیت
+        if (!position || isNaN(position.x) || isNaN(position.y)) {
+            console.error("❌ Invalid position, using center");
+            position = Qt.point(nodeCanvas.width / 2, nodeCanvas.height / 2);
+        }
+
         if (nodeGraphManager && nodeGraphManager.createNode) {
-            var node = nodeGraphManager.createNode(nodeType, position)
+            var node = nodeGraphManager.createNode(nodeType, position);
             if (node) {
-                nodeEditorView.nodeCreated(node)
-                nodeEditorView.selectedNode = node
-                nodeEditorView.selectedNodes = [node]
-                nodeEditorView.graphModified()
-                return node
+                nodeCreated(node);
+                selectedNode = node;
+                selectedNodes = [node];
+                graphModified();
+                console.log("✅ Node created successfully via manager");
+                return node;
             }
-        } else {
-            // Fallback برای زمانی که nodeGraphManager موجود نیست
-            var nodeData = {
-                nodeId: "node_" + Math.random().toString(36).substr(2, 9),
-                type: nodeType,
-                name: getNodeName(nodeType),
-                position: position,
-                category: getNodeCategory(nodeType),
-                icon: getNodeIcon(nodeType),
-                parameters: getDefaultParameters(nodeType),
-                ports: getDefaultPorts(nodeType)
-            }
-            return nodeData
         }
-        return null
+
+        // Fallback
+        var nodeData = {
+            nodeId: "node_" + Math.random().toString(36).substr(2, 9),
+            type: nodeType,
+            name: getNodeName(nodeType),
+            position: position,
+            category: getNodeCategory(nodeType),
+            icon: getNodeIcon(nodeType),
+            parameters: getDefaultParameters(nodeType),
+            ports: getDefaultPorts(nodeType),
+            enabled: true,
+            status: "idle"
+        };
+
+        nodeCreated(nodeData);
+        selectedNode = nodeData;
+        selectedNodes = [nodeData];
+        graphModified();
+        console.log("📝 Created fallback node");
+        return nodeData;
     }
 
+    function cleanupDrag() {
+        nodeEditorView.isDraggingNode = false;
+        nodeEditorView.draggingNodeType = "";
+        if (nodeEditorView.nodePreview) {
+            nodeEditorView.nodePreview.destroy();
+            nodeEditorView.nodePreview = null;
+        }
+        console.log("🧹 Drag cleaned up");
+    }
+
+    // توابع کمکی
     function getNodeName(nodeType) {
         var names = {
             "eeg_input": "EEG Input",
@@ -847,7 +981,7 @@ Rectangle {
             "ssvep_detector": "SSVEP Detector",
             "motor_imagery": "Motor Imagery"
         }
-        return names[nodeType] || nodeType
+        return names[nodeType] || nodeType;
     }
 
     function getNodeCategory(nodeType) {
@@ -864,7 +998,7 @@ Rectangle {
             "ssvep_detector": "BCI Paradigms",
             "motor_imagery": "BCI Paradigms"
         }
-        return categories[nodeType] || "Utilities"
+        return categories[nodeType] || "Utilities";
     }
 
     function getNodeIcon(nodeType) {
@@ -881,11 +1015,10 @@ Rectangle {
             "ssvep_detector": "📊",
             "motor_imagery": "💪"
         }
-        return icons[nodeType] || "⚙️"
+        return icons[nodeType] || "⚙️";
     }
 
     function getDefaultParameters(nodeType) {
-        // پارامترهای پیش‌فرض برای انواع نودها
         var parameters = {
             "bandpass_filter": {
                 "low_cut": {value: 1.0, type: "number", min: 0.1, max: 50.0, step: 0.1},
@@ -898,11 +1031,10 @@ Rectangle {
                 "matrix_size": {value: "6x6", type: "options", options: ["4x4", "5x5", "6x6", "8x8"]}
             }
         }
-        return parameters[nodeType] || {}
+        return parameters[nodeType] || {};
     }
 
     function getDefaultPorts(nodeType) {
-        // پورت‌های پیش‌فرض برای انواع نودها
         var ports = {
             "eeg_input": [
                 {name: "eeg_output", direction: "output", dataType: "EEGSignal"}
@@ -916,9 +1048,10 @@ Rectangle {
                 {name: "classification", direction: "output", dataType: "ClassificationResult"}
             ]
         }
-        return ports[nodeType] || []
+        return ports[nodeType] || [];
     }
 
+    // توابع مدیریت نودها
     function deleteNode(nodeId) {
         if (nodeGraphManager && nodeGraphManager.removeNode) {
             nodeGraphManager.removeNode(nodeId)
@@ -1027,7 +1160,6 @@ Rectangle {
             return false
         }
 
-        // بررسی اتصالات پایپ‌لاین
         var hasConnections = nodeEditorView.currentNodeGraph.connections &&
                            nodeEditorView.currentNodeGraph.connections.length > 0
         if (!hasConnections) {
@@ -1070,7 +1202,6 @@ Rectangle {
     function copySelectedNodes() {
         if (nodeEditorView.selectedNodes.length > 0) {
             console.log("Copying", nodeEditorView.selectedNodes.length, "nodes")
-            // پیاده‌سازی کپی نودها
         }
     }
 
@@ -1083,7 +1214,6 @@ Rectangle {
 
     function pasteNodes() {
         console.log("Pasting nodes")
-        // پیاده‌سازی پیست نودها
     }
 
     function disableNode(nodeId) {
@@ -1097,67 +1227,6 @@ Rectangle {
         if (nodeGraphManager && nodeGraphManager.setNodeEnabled) {
             nodeGraphManager.setNodeEnabled(nodeId, true)
             nodeEditorView.graphModified()
-        }
-    }
-
-    // کامپوننت پیش‌نمایش نود
-    Component {
-        id: nodePreviewComponent
-
-        Rectangle {
-            id: nodePreview
-            property string nodeType: ""
-            width: 120
-            height: 60
-            color: Qt.rgba(0.2, 0.4, 0.8, 0.7)
-            radius: 8
-            border.color: "white"
-            border.width: 2
-            z: 1000
-
-            Row {
-                anchors.centerIn: parent
-                spacing: 8
-
-                Text {
-                    text: getNodeIcon(nodeType)
-                    font.pixelSize: 16
-                    color: "white"
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-
-                Text {
-                    text: getNodeName(nodeType)
-                    color: "white"
-                    font.family: "Segoe UI"
-                    font.pixelSize: 11
-                    font.bold: true
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-            }
-
-            function getNodeIcon(type) {
-                return nodeEditorView.getNodeIcon(type)
-            }
-
-            function getNodeName(type) {
-                return nodeEditorView.getNodeName(type)
-            }
-        }
-    }
-
-    // Initialization
-    Component.onCompleted: {
-        console.log("Node Editor initialized")
-
-        // Initialize node registry
-        if (nodeRegistry && nodeRegistry.loadBCINodeLibrary) {
-            nodeRegistry.loadBCINodeLibrary()
-        }
-
-        // Load default graph or create new one
-        if (!nodeEditorView.currentNodeGraph) {
-            nodeEditorView.createNewGraph()
         }
     }
 
@@ -1253,6 +1322,30 @@ Rectangle {
 
     Shortcut {
         sequence: "Escape"
-        onActivated: nodeEditorView.stopExecution()
+        onActivated: {
+            if (nodeEditorView.isDraggingNode) {
+                nodeEditorView.cleanupDrag()
+            } else {
+                nodeEditorView.stopExecution()
+            }
+        }
+    }
+
+    // Initialization
+    Component.onCompleted: {
+        console.log("🧠 Node Editor initialized");
+        console.log("📊 NodeGraphManager available:", nodeGraphManager !== null);
+        console.log("📚 NodeRegistry available:", nodeRegistry !== null);
+        console.log("✅ PipelineValidator available:", pipelineValidator !== null);
+
+        // Initialize node registry
+        if (nodeRegistry && nodeRegistry.loadBCINodeLibrary) {
+            nodeRegistry.loadBCINodeLibrary();
+        }
+
+        // Load default graph or create new one
+        if (!nodeEditorView.currentNodeGraph) {
+            nodeEditorView.createNewGraph();
+        }
     }
 }

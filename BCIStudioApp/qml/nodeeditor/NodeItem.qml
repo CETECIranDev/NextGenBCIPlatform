@@ -13,6 +13,7 @@ Rectangle {
     radius: 12
     opacity: isDragging ? 0.8 : 1.0
 
+    // Properties
     property var theme: ({})
     property var nodeModel
     property bool isSelected: false
@@ -23,6 +24,7 @@ Rectangle {
     readonly property bool isNodeItem: true
     readonly property string nodeId: nodeModel ? nodeModel.nodeId : ""
 
+    // Signals
     signal selected(bool multiple)
     signal deselected()
     signal moved(point newPosition)
@@ -31,7 +33,7 @@ Rectangle {
     signal doubleClicked()
     signal contextMenuRequested(var mouse)
 
-    // سایه برای نود
+    // Shadow effect
     layer.enabled: true
     layer.effect: DropShadow {
         transparentBorder: true
@@ -41,7 +43,7 @@ Rectangle {
         verticalOffset: isSelected ? 3 : 2
     }
 
-    // انیمیشن‌ها
+    // Animations
     Behavior on color {
         ColorAnimation { duration: 200 }
     }
@@ -58,7 +60,7 @@ Rectangle {
         NumberAnimation { duration: 200; easing.type: Easing.OutBack }
     }
 
-    // انیمیشن اجرا برای نودهای در حال پردازش
+    // Execution animation
     SequentialAnimation on scale {
         running: isExecuting
         loops: Animation.Infinite
@@ -66,13 +68,14 @@ Rectangle {
         NumberAnimation { to: 1.0; duration: 800; easing.type: Easing.InOutQuad }
     }
 
+    // Main content layout
     ColumnLayout {
         id: contentLayout
         anchors.fill: parent
         anchors.margins: 12
-        spacing: 10
+        spacing: 12
 
-        // هدر نود
+        // Node header
         Rectangle {
             id: nodeHeader
             Layout.fillWidth: true
@@ -85,7 +88,7 @@ Rectangle {
                 anchors.margins: 8
                 spacing: 8
 
-                // آیکون نود
+                // Node icon
                 Rectangle {
                     width: 24
                     height: 24
@@ -101,7 +104,7 @@ Rectangle {
                     }
                 }
 
-                // عنوان و اطلاعات نود
+                // Node title and info
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 1
@@ -126,7 +129,7 @@ Rectangle {
                     }
                 }
 
-                // وضعیت نود
+                // Node status indicator
                 Rectangle {
                     width: 10
                     height: 10
@@ -136,7 +139,7 @@ Rectangle {
                     border.width: 1
                     Layout.alignment: Qt.AlignVCenter
 
-                    // پالس انیمیشن برای نودهای فعال
+                    // Pulse animation for active nodes
                     SequentialAnimation on opacity {
                         running: isExecuting || (nodeModel && nodeModel.status === "active")
                         loops: Animation.Infinite
@@ -147,12 +150,21 @@ Rectangle {
             }
         }
 
-        // پورت‌های ورودی
+        // Input ports section
         ColumnLayout {
             id: inputsColumn
             Layout.fillWidth: true
-            spacing: 3
+            spacing: 8
             visible: inputPorts.count > 0
+
+            Text {
+                text: "Inputs"
+                color: theme.textSecondary
+                font.family: "Segoe UI"
+                font.pixelSize: 10
+                font.bold: true
+                Layout.alignment: Qt.AlignLeft
+            }
 
             Repeater {
                 id: inputPorts
@@ -162,13 +174,21 @@ Rectangle {
                     Layout.fillWidth: true
                     portModel: modelData
                     isInput: true
-                    onConnectionStarted: (port, mouse) => nodeItem.connectionStarted(port, mouse)
-                    onConnectionFinished: (port) => nodeItem.connectionFinished(port)
+                    theme: nodeItem.theme
+                    onConnectionStarted: (port, mouse) => {
+                        console.log("🔗 Input port connection started:", port.name)
+                        var globalPos = mapToItem(nodeItem.parent, mouse.x, mouse.y)
+                        nodeItem.connectionStarted(port, globalPos)
+                    }
+                    onConnectionFinished: (port) => {
+                        console.log("🔗 Input port connection finished:", port.name)
+                        nodeItem.connectionFinished(port)
+                    }
                 }
             }
         }
 
-        // بدنه نود - پارامترها
+        // Node body - parameters
         Rectangle {
             Layout.fillWidth: true
             implicitHeight: parametersColumn.height + 12
@@ -201,12 +221,21 @@ Rectangle {
             }
         }
 
-        // پورت‌های خروجی
+        // Output ports section
         ColumnLayout {
             id: outputsColumn
             Layout.fillWidth: true
-            spacing: 3
+            spacing: 8
             visible: outputPorts.count > 0
+
+            Text {
+                text: "Outputs"
+                color: theme.textSecondary
+                font.family: "Segoe UI"
+                font.pixelSize: 10
+                font.bold: true
+                Layout.alignment: Qt.AlignLeft
+            }
 
             Repeater {
                 id: outputPorts
@@ -216,8 +245,16 @@ Rectangle {
                     Layout.fillWidth: true
                     portModel: modelData
                     isInput: false
-                    onConnectionStarted: (port, mouse) => nodeItem.connectionStarted(port, mouse)
-                    onConnectionFinished: (port) => nodeItem.connectionFinished(port)
+                    theme: nodeItem.theme
+                    onConnectionStarted: (port, mouse) => {
+                        console.log("🔗 Output port connection started:", port.name)
+                        var globalPos = mapToItem(nodeItem.parent, mouse.x, mouse.y)
+                        nodeItem.connectionStarted(port, globalPos)
+                    }
+                    onConnectionFinished: (port) => {
+                        console.log("🔗 Output port connection finished:", port.name)
+                        nodeItem.connectionFinished(port)
+                    }
                 }
             }
         }
@@ -228,25 +265,27 @@ Rectangle {
         id: mainMouseArea
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
-        drag.threshold: 3
+        drag.threshold: 5
         hoverEnabled: true
         propagateComposedEvents: true
 
+        property point dragStartPosition
+        property bool isDraggingNode: false
+
         onPressed: (mouse) => {
             forceActiveFocus()
+            console.log("🖱️ Node pressed:", nodeId)
 
             if (mouse.button === Qt.LeftButton) {
-                if (multipleSelection) {
-                    if (isSelected) {
-                        nodeItem.deselected()
-                    } else {
-                        nodeItem.selected(true)
-                    }
+                dragStartPosition = Qt.point(nodeItem.x, nodeItem.y)
+
+                if (mouse.modifiers & Qt.ControlModifier) {
+                    // Multiple selection
+                    nodeItem.selected(true)
                 } else {
+                    // Single selection
                     nodeItem.selected(false)
                 }
-                dragTarget = nodeItem
-                dragStartPos = Qt.point(nodeItem.x, nodeItem.y)
             } else if (mouse.button === Qt.RightButton) {
                 nodeItem.contextMenuRequested(mouse)
                 mouse.accepted = true
@@ -254,23 +293,24 @@ Rectangle {
         }
 
         onPositionChanged: (mouse) => {
-            if (pressed && mainMouseArea.drag.active) {
-                isDragging = true
-                var newX = nodeItem.x + mouse.x - mouse.originX
-                var newY = nodeItem.y + mouse.y - mouse.originY
-                nodeItem.x = newX
-                nodeItem.y = newY
+            if (pressed && (Math.abs(mouse.x - mouse.originX) > drag.threshold ||
+                            Math.abs(mouse.y - mouse.originY) > drag.threshold)) {
+                isDraggingNode = true
+                nodeItem.z += 1 // Bring dragging node to front
             }
         }
 
         onReleased: (mouse) => {
-            if (isDragging) {
-                isDragging = false
+            if (isDraggingNode) {
+                isDraggingNode = false
+                nodeItem.z -= 1 // Restore original z-index
                 nodeItem.moved(Qt.point(nodeItem.x, nodeItem.y))
+                console.log("📦 Node moved to:", nodeItem.x, nodeItem.y)
             }
         }
 
         onDoubleClicked: {
+            console.log("🖱️ Node double clicked:", nodeId)
             nodeItem.doubleClicked()
         }
 
@@ -293,7 +333,7 @@ Rectangle {
         drag.smoothed: true
     }
 
-    // توابع کمکی
+    // Helper functions
     function getInputPorts(ports) {
         if (!ports) return []
         return ports.filter(port => port.direction === 0 || port.direction === "input")
@@ -309,12 +349,13 @@ Rectangle {
         for (var i = 0; i < ports.count; i++) {
             var portItem = ports.itemAt(i)
             if (portItem && portItem.portModel && portItem.portModel.portId === portId) {
-                var portCircle = portItem.children[0].children[0] // Assuming the port circle is the first child
-                var portCenter = portItem.mapToItem(nodeItem.parent, portCircle.x + portCircle.width/2, portCircle.y + portCircle.height/2)
+                var portCenter = portItem.mapToItem(nodeItem.parent,
+                    portItem.portCircle.x + portItem.portCircle.width/2,
+                    portItem.portCircle.y + portItem.portCircle.height/2)
                 return portCenter
             }
         }
-        return Qt.point(nodeItem.x + (isInput ? 0 : nodeItem.width), nodeItem.y + nodeItem.height / 2)
+        return null
     }
 
     function getCategoryColor() {
@@ -365,14 +406,14 @@ Rectangle {
         return visibleParams
     }
 
-    // تابع برای به‌روزرسانی وضعیت نود
+    // Function to update node status
     function updateStatus(newStatus) {
         if (nodeModel) {
             nodeModel.status = newStatus
         }
     }
 
-    // تابع برای فعال/غیرفعال کردن نود
+    // Function to enable/disable node
     function setEnabled(enabled) {
         if (nodeModel) {
             nodeModel.enabled = enabled
@@ -380,7 +421,7 @@ Rectangle {
         }
     }
 
-    // تابع برای هایلایت نود
+    // Function to highlight node
     function highlight(temporary) {
         var originalBorder = border.color
         border.color = theme.accent
@@ -391,6 +432,7 @@ Rectangle {
         }
     }
 
+    // Highlight timer
     Timer {
         id: highlightTimer
         interval: 1000
@@ -400,11 +442,23 @@ Rectangle {
         }
     }
 
+    // Debug information
+    Text {
+        anchors.top: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: Math.round(parent.x) + "," + Math.round(parent.y)
+        color: "red"
+        font.pixelSize: 9
+        visible: false // Set to true for debugging
+    }
+
     Component.onCompleted: {
-        console.log("NodeItem created:", nodeId, nodeModel ? nodeModel.name : "Unknown")
+        console.log("🎯 NodeItem created:", nodeId, nodeModel ? nodeModel.name : "Unknown")
+        console.log("📊 Node ports:", nodeModel && nodeModel.ports ? nodeModel.ports.length : 0)
     }
 
     Component.onDestruction: {
-        console.log("NodeItem destroyed:", nodeId)
+        console.log("🗑️ NodeItem destroyed:", nodeId)
     }
 }
+

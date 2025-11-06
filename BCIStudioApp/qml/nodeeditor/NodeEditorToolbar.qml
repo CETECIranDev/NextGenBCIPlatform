@@ -9,6 +9,7 @@ Rectangle {
     color: appTheme.backgroundSecondary
     radius: 12
 
+    property var theme: ({})
     property var nodeGraph
     property var selectedNodes: []
     property var canvas
@@ -16,6 +17,7 @@ Rectangle {
     property real executionProgress: 0.0
     property bool leftSidebarCollapsed: false
     property bool rightSidebarCollapsed: false
+
 
     signal zoomIn()
     signal zoomOut()

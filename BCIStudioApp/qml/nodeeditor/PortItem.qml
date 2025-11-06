@@ -8,13 +8,43 @@ Rectangle {
     height: 28
     color: "transparent"
 
-    property var portModel
+    // Propertyهای سازگار با delegate
+    property var portModel: null
     property bool isInput: true
-    property bool isConnected: portModel ? portModel.isConnected : false
-    property bool isHovered: false
-    property bool canConnect: portModel ? portModel.canConnect : true
-    property bool isOptional: portModel ? portModel.optional : false
 
+    // Propertyهای computed از portModel
+    property string portName: portModel ? portModel.name : ""
+    property string portType: portModel ? portModel.dataType : ""
+    property string portDirection: portModel ? portModel.direction : "input"
+    property bool isConnected: portModel ? (portModel.connected || false) : false
+    property string portDescription: portModel ? portModel.description : ""
+    property bool portOptional: portModel ? (portModel.optional || false) : false
+    property bool portMultiple: portModel ? (portModel.multiple || false) : false
+    property bool portCanConnect: portModel ? (portModel.canConnect !== false) : true
+    property bool portShowConnectionStatus: portModel ? (portModel.showConnectionStatus !== false) : true
+
+    property bool isHovered: false
+    property var theme: ({
+        "textPrimary": "#212529",
+        "textSecondary": "#6C757D",
+        "textTertiary": "#ADB5BD",
+        "backgroundPrimary": "#FFFFFF",
+        "border": "#DEE2E6",
+        "primary": "#4361EE",
+        "secondary": "#3A0CA3",
+        "accent": "#7209B7",
+        "success": "#4CC9F0",
+        "warning": "#F72585",
+        "error": "#EF476F",
+        "info": "#4895EF",
+        "brainWaveAlpha": "#4CAF50",
+        "brainWaveBeta": "#2196F3",
+        "brainWaveTheta": "#FF9800",
+        "brainWaveDelta": "#9C27B0",
+        "brainWaveGamma": "#F44336"
+    })
+
+    // سیگنال‌ها
     signal connectionStarted(var port, var mouse)
     signal connectionFinished(var port)
     signal portClicked(var port)
@@ -44,7 +74,7 @@ Rectangle {
             color: getPortColor()
             border.color: getBorderColor()
             border.width: isConnected ? 3 : 2
-            
+
             // سایه برای پورت‌های متصل
             layer.enabled: isConnected
             layer.effect: DropShadow {
@@ -78,7 +108,7 @@ Rectangle {
                 font.pixelSize: 8
                 color: "white"
                 anchors.centerIn: parent
-                visible: portMouseArea.containsMouse && canConnect
+                visible: portMouseArea.containsMouse && portCanConnect
                 scale: portMouseArea.containsPress ? 0.8 : 1.0
             }
 
@@ -88,7 +118,7 @@ Rectangle {
                 font.pixelSize: 8
                 color: "white"
                 anchors.centerIn: parent
-                visible: !canConnect
+                visible: !portCanConnect
             }
 
             // نشانگر پورت اختیاری
@@ -99,7 +129,7 @@ Rectangle {
                 color: theme.warning
                 border.color: "white"
                 border.width: 1
-                visible: isOptional
+                visible: portOptional
                 anchors {
                     top: parent.top
                     right: parent.right
@@ -120,7 +150,7 @@ Rectangle {
                 spacing: 4
 
                 Text {
-                    text: portModel ? portModel.name : "Unknown Port"
+                    text: portName || "Unknown Port"
                     color: theme.textPrimary
                     font.family: "Segoe UI"
                     font.pixelSize: 11
@@ -137,7 +167,7 @@ Rectangle {
                     font.family: "Segoe UI"
                     font.pixelSize: 8
                     font.bold: true
-                    visible: portModel && portModel.showConnectionStatus !== false
+                    visible: portShowConnectionStatus
                 }
             }
 
@@ -148,7 +178,7 @@ Rectangle {
                 layoutDirection: isInput ? Qt.LeftToRight : Qt.RightToLeft
 
                 Text {
-                    text: portModel ? getDataTypeDescription(portModel.dataType) : "Unknown"
+                    text: getDataTypeDescription(portType)
                     color: theme.textSecondary
                     font.family: "Segoe UI"
                     font.pixelSize: 9
@@ -159,18 +189,18 @@ Rectangle {
 
                 // نشانگر چندتایی
                 Text {
-                    text: portModel && portModel.multiple ? "[]" : ""
+                    text: portMultiple ? "[]" : ""
                     color: theme.textTertiary
                     font.family: "Segoe UI"
                     font.pixelSize: 8
                     font.bold: true
-                    visible: portModel && portModel.multiple
+                    visible: portMultiple
                 }
             }
 
             // توضیحات پورت
             Text {
-                text: portModel && portModel.description ? portModel.description : ""
+                text: portDescription || ""
                 color: theme.textTertiary
                 font.family: "Segoe UI"
                 font.pixelSize: 8
@@ -208,7 +238,7 @@ Rectangle {
         }
 
         onPressed: (mouse) => {
-            if (mouse.button === Qt.LeftButton && canConnect) {
+            if (mouse.button === Qt.LeftButton && portCanConnect) {
                 portItem.connectionStarted(portModel, mouse)
                 mouse.accepted = true
             } else if (mouse.button === Qt.RightButton) {
@@ -218,7 +248,7 @@ Rectangle {
         }
 
         onReleased: (mouse) => {
-            if (mouse.button === Qt.LeftButton && canConnect) {
+            if (mouse.button === Qt.LeftButton && portCanConnect) {
                 portItem.connectionFinished(portModel)
             }
         }
@@ -230,15 +260,14 @@ Rectangle {
         }
 
         onDoubleClicked: {
-            if (canConnect) {
+            if (portCanConnect) {
                 // ایجاد اتصال سریع با دابل کلیک
                 portItem.connectionStarted(portModel, {x: portCircle.width/2, y: portCircle.height/2})
-                // اینجا می‌توانید منطق اتصال سریع را پیاده‌سازی کنید
             }
         }
 
         function getCursorShape() {
-            if (!canConnect) return Qt.ForbiddenCursor
+            if (!portCanConnect) return Qt.ForbiddenCursor
             if (isConnected) return Qt.PointingHandCursor
             return Qt.CrossCursor
         }
@@ -249,7 +278,8 @@ Rectangle {
         id: portTooltip
         delay: 500
         timeout: 4000
-        
+        visible: portMouseArea.containsMouse && portModel
+
         contentItem: ColumnLayout {
             spacing: 6
             width: 240
@@ -276,7 +306,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: portModel ? portModel.name : "Unknown Port"
+                    text: portName || "Unknown Port"
                     color: theme.textPrimary
                     font.family: "Segoe UI"
                     font.pixelSize: 12
@@ -291,7 +321,7 @@ Rectangle {
                 spacing: 2
 
                 Text {
-                    text: getDataTypeDescription(portModel ? portModel.dataType : "")
+                    text: getDataTypeDescription(portType)
                     color: theme.textSecondary
                     font.family: "Segoe UI"
                     font.pixelSize: 10
@@ -299,7 +329,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: portModel && portModel.description ? portModel.description : "No description available"
+                    text: portDescription || "No description available"
                     color: theme.textSecondary
                     font.family: "Segoe UI"
                     font.pixelSize: 9
@@ -356,7 +386,7 @@ Rectangle {
                     font.family: "Segoe UI"
                     font.pixelSize: 9
                     font.bold: true
-                    visible: isOptional
+                    visible: portOptional
                 }
 
                 Text {
@@ -365,7 +395,7 @@ Rectangle {
                     font.family: "Segoe UI"
                     font.pixelSize: 9
                     Layout.fillWidth: true
-                    visible: isOptional
+                    visible: portOptional
                 }
 
                 // چندتایی
@@ -375,7 +405,7 @@ Rectangle {
                     font.family: "Segoe UI"
                     font.pixelSize: 9
                     font.bold: true
-                    visible: portModel && portModel.multiple
+                    visible: portMultiple
                 }
 
                 Text {
@@ -384,7 +414,7 @@ Rectangle {
                     font.family: "Segoe UI"
                     font.pixelSize: 9
                     Layout.fillWidth: true
-                    visible: portModel && portModel.multiple
+                    visible: portMultiple
                 }
             }
 
@@ -397,28 +427,19 @@ Rectangle {
                 font.bold: true
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true
-                visible: text !== ""
+                Layout.topMargin: 4
             }
-        }
-    }
-
-    // مدیریت نمایش Tooltip
-    onIsHoveredChanged: {
-        if (isHovered && portModel) {
-            portTooltip.show()
-        } else {
-            portTooltip.hide()
         }
     }
 
     // توابع کمکی
     function getPortColor() {
-        if (!portModel || !canConnect) return theme.error
-        
-        var dataType = portModel.dataType
+        if (!portModel || !portCanConnect) return theme.error
+
+        var dataType = portType || "Unknown"
         var colors = {
             "EEGSignal": theme.brainWaveAlpha,
-            "ECGSignal": theme.brainWaveBeta, 
+            "ECGSignal": theme.brainWaveBeta,
             "EMGSignal": theme.brainWaveTheta,
             "FeatureVector": theme.brainWaveDelta,
             "ClassificationResult": theme.brainWaveGamma,
@@ -429,22 +450,23 @@ Rectangle {
             "VideoSignal": "#9C27B0",
             "Boolean": "#757575",
             "Number": "#009688",
-            "String": "#795548"
+            "String": "#795548",
+            "Unknown": theme.primary
         }
         return colors[dataType] || theme.primary
     }
 
     function getBorderColor() {
-        if (!canConnect) return theme.error
-        if (isHovered && canConnect) return theme.textPrimary
+        if (!portCanConnect) return theme.error
+        if (isHovered && portCanConnect) return theme.textPrimary
         if (isConnected) return theme.backgroundPrimary
         return theme.border
     }
 
     function getDataTypeIcon() {
         if (!portModel) return "?"
-        
-        var dataType = portModel.dataType
+
+        var dataType = portType || "Unknown"
         var icons = {
             "EEGSignal": "🧠",
             "ECGSignal": "❤️",
@@ -458,16 +480,19 @@ Rectangle {
             "VideoSignal": "📹",
             "Boolean": "🔲",
             "Number": "🔢",
-            "String": "🔤"
+            "String": "🔤",
+            "Unknown": "📌"
         }
         return icons[dataType] || "📌"
     }
 
     function getDataTypeDescription(dataType) {
+        if (!dataType) return "Unknown Data Type"
+
         var descriptions = {
             "EEGSignal": "EEG Signal Data",
             "ECGSignal": "ECG Signal Data",
-            "EMGSignal": "EMG Signal Data", 
+            "EMGSignal": "EMG Signal Data",
             "FeatureVector": "Feature Vector",
             "ClassificationResult": "Classification Result",
             "ControlSignal": "Control Signal",
@@ -482,57 +507,50 @@ Rectangle {
         return descriptions[dataType] || dataType
     }
 
-    function getDataTypeAbbreviation(dataType) {
-        var abbreviations = {
-            "EEGSignal": "EEG",
-            "ECGSignal": "ECG",
-            "EMGSignal": "EMG",
-            "FeatureVector": "FT",
-            "ClassificationResult": "CLS",
-            "ControlSignal": "CTL",
-            "Configuration": "CFG",
-            "Trigger": "TRG",
-            "AudioSignal": "AUD",
-            "VideoSignal": "VID",
-            "Boolean": "BOOL",
-            "Number": "NUM",
-            "String": "STR"
-        }
-        return abbreviations[dataType] || "??"
-    }
-
     function getStatusMessage() {
-        if (!canConnect) return "Port is disabled"
+        if (!portCanConnect) return "Port is disabled"
         if (isConnected) return "Port is connected"
-        if (isOptional) return "Optional port - connection not required"
+        if (portOptional) return "Optional port - connection not required"
         return "Click to connect or double-click for quick connect"
     }
 
     function getStatusColor() {
-        if (!canConnect) return theme.error
+        if (!portCanConnect) return theme.error
         if (isConnected) return theme.success
-        if (isOptional) return theme.warning
+        if (portOptional) return theme.warning
         return theme.info
     }
 
     // تابع برای بروزرسانی وضعیت اتصال
     function updateConnectionStatus(connected) {
         isConnected = connected
+        if (portModel) {
+            portModel.connected = connected
+        }
     }
 
     // تابع برای غیرفعال کردن پورت
     function disablePort() {
-        canConnect = false
+        portCanConnect = false
+        if (portModel) {
+            portModel.canConnect = false
+        }
     }
 
     // تابع برای فعال کردن پورت
     function enablePort() {
-        canConnect = true
+        portCanConnect = true
+        if (portModel) {
+            portModel.canConnect = true
+        }
     }
 
     // تابع برای تنظیم وضعیت اختیاری
     function setOptional(optional) {
-        isOptional = optional
+        portOptional = optional
+        if (portModel) {
+            portModel.optional = optional
+        }
     }
 
     // تابع برای گرفتن موقعیت پورت در مختصات جهانی
@@ -542,18 +560,32 @@ Rectangle {
 
     // تابع برای بررسی سازگاری پورت‌ها
     function isCompatibleWith(otherPort) {
-        if (!portModel || !otherPort || !canConnect || !otherPort.canConnect) return false
-        
+        if (!portModel || !otherPort || !portCanConnect || !otherPort.portCanConnect) return false
+
         // پورت‌های ورودی و خروجی باید مخالف جهت باشند
         if (isInput === otherPort.isInput) return false
-        
+
         // بررسی نوع داده
-        return portModel.dataType === otherPort.dataType
+        var thisDataType = portType || "Unknown"
+        var otherDataType = otherPort.portType || "Unknown"
+        return thisDataType === otherDataType
+    }
+
+    // تابع برای گرفتن موقعیت مرکز پورت
+    function getCenterPosition() {
+        var circleCenter = Qt.point(portCircle.width / 2, portCircle.height / 2)
+        return portCircle.mapToItem(portItem.parent, circleCenter.x, circleCenter.y)
     }
 
     Component.onCompleted: {
         if (portModel) {
-            console.log("PortItem created:", portModel.name, "Type:", portModel.dataType)
+            console.log("PortItem created:", portName, "Type:", portType, "Input:", isInput)
+        }
+    }
+
+    Component.onDestruction: {
+        if (portModel) {
+            console.log("PortItem destroyed:", portName)
         }
     }
 }

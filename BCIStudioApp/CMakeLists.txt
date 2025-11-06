@@ -199,6 +199,10 @@ qt_add_resources(BCIStudioApp "qml_resources"
         qml/nodeeditor/InfoCard.qml
         qml/nodeeditor/CategoryPill.qml
         qml/nodeeditor/NodeToolboxCard.qml
+        qml/nodeeditor/ParameterEditor.qml
+        qml/nodeeditor/CustomActionButton.qml
+        qml/nodeeditor/EmptyStatePanel.qml
+        qml/nodeeditor/StatusBadge.qml
 
         qml/pipeline/PipelineExecutorView.qml
         qml/pipeline/PipelineControls.qml

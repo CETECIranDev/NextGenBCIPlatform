@@ -20,6 +20,23 @@ Rectangle {
     property var tempConnection: null
     property bool isCreatingConnection: false
 
+    property var theme: ({
+        "backgroundPrimary": "#FFFFFF",
+        "backgroundSecondary": "#F8F9FA",
+        "backgroundTertiary": "#E9ECEF",
+        "primary": "#4361EE",
+        "secondary": "#3A0CA3",
+        "accent": "#7209B7",
+        "success": "#4CC9F0",
+        "warning": "#F72585",
+        "error": "#EF476F",
+        "info": "#4895EF",
+        "textPrimary": "#212529",
+        "textSecondary": "#6C757D",
+        "textTertiary": "#ADB5BD",
+        "border": "#DEE2E6"
+    })
+
     // سیگنال‌ها
     signal nodeSelected(var node)
     signal nodesSelected(var nodes)
@@ -31,6 +48,8 @@ Rectangle {
     signal nodesDeleted(var nodeIds)
     signal canvasRightClicked(real mouseX, real mouseY)
     signal canvasDoubleClicked(real mouseX, real mouseY)
+    signal viewChanged()
+    signal screenToGraphPositionCalculated(real screenX, real screenY, point graphPos)
 
     // شبکه زمینه
     Canvas {
@@ -121,8 +140,8 @@ Rectangle {
         }
 
         function drawConnection(ctx, connection) {
-            var sourceNode = nodeGraph.getNode(connection.sourceNodeId)
-            var targetNode = nodeGraph.getNode(connection.targetNodeId)
+            var sourceNode = getNodeById(connection.sourceNodeId)
+            var targetNode = getNodeById(connection.targetNodeId)
 
             if (!sourceNode || !targetNode) return
 
@@ -192,7 +211,7 @@ Rectangle {
             // پیدا کردن آیتم نود مربوطه
             for (var i = 0; i < nodeRepeater.count; i++) {
                 var nodeItem = nodeRepeater.itemAt(i)
-                if (nodeItem && nodeItem.nodeModel.nodeId === node.nodeId) {
+                if (nodeItem && nodeItem.nodeModel && nodeItem.nodeModel.nodeId === node.nodeId) {
                     return nodeItem.getPortPosition(portId, isOutput)
                 }
             }
@@ -213,9 +232,10 @@ Rectangle {
             scale: nodeCanvas.zoomLevel
             transformOrigin: Item.TopLeft
             z: modelData.zIndex || 0
+            theme: nodeCanvas.theme
 
             isSelected: nodeCanvas.selectedNodes.some(function(selectedNode) {
-                return selectedNode.nodeId === modelData.nodeId
+                return selectedNode && selectedNode.nodeId === modelData.nodeId
             })
 
             onSelected: (multiple) => {
@@ -315,11 +335,8 @@ Rectangle {
 
         onDropped: (drop) => {
             if (drop.keys.indexOf("node/new") !== -1) {
-                var canvasPos = Qt.point(
-                    (drop.x - nodeCanvas.viewOffset.x) / nodeCanvas.zoomLevel,
-                    (drop.y - nodeCanvas.viewOffset.y) / nodeCanvas.zoomLevel
-                )
-                nodeEditorView.finishNodeDrag(canvasPos)
+                var canvasPos = calculateScreenToGraphPosition(drop.x, drop.y)
+                nodeEditorView.finishNodeCreation(canvasPos)
             }
         }
 
@@ -376,6 +393,7 @@ Rectangle {
                 lastMousePos = Qt.point(mouse.x, mouse.y)
                 gridCanvas.requestPaint()
                 connectionLayer.requestPaint()
+                nodeCanvas.viewChanged()
             } else if (pressedButtons & Qt.LeftButton && isSelecting) {
                 // به روز رسانی selection rectangle
                 selectionRect.width = mouse.x - selectionStart.x
@@ -419,16 +437,14 @@ Rectangle {
 
             // zoom towards mouse position
             var mousePos = Qt.point(wheel.x, wheel.y)
-            var worldPos = Qt.point(
-                (mousePos.x - nodeCanvas.viewOffset.x) / oldZoom,
-                (mousePos.y - nodeCanvas.viewOffset.y) / oldZoom
-            )
+            var worldPos = calculateScreenToGraphPosition(mousePos.x, mousePos.y)
 
             nodeCanvas.viewOffset.x = mousePos.x - worldPos.x * nodeCanvas.zoomLevel
             nodeCanvas.viewOffset.y = mousePos.y - worldPos.y * nodeCanvas.zoomLevel
 
             gridCanvas.requestPaint()
             connectionLayer.requestPaint()
+            nodeCanvas.viewChanged()
         }
 
         onClicked: (mouse) => {
@@ -466,6 +482,8 @@ Rectangle {
     // منوی زمینه برای نودها
     NodeContextMenu {
         id: nodeContextMenu
+        theme: nodeCanvas.theme
+
         onDeleteNode: {
             if (node) {
                 nodeCanvas.nodesDeleted([node.nodeId])
@@ -509,7 +527,7 @@ Rectangle {
         var allNodes = []
         for (var i = 0; i < nodeRepeater.count; i++) {
             var nodeItem = nodeRepeater.itemAt(i)
-            if (nodeItem) {
+            if (nodeItem && nodeItem.nodeModel) {
                 allNodes.push(nodeItem.nodeModel)
             }
         }
@@ -524,10 +542,16 @@ Rectangle {
     }
 
     function getMousePosition() {
-        return Qt.point(
-            (canvasMouseArea.mouseX - nodeCanvas.viewOffset.x) / nodeCanvas.zoomLevel,
-            (canvasMouseArea.mouseY - nodeCanvas.viewOffset.y) / nodeCanvas.zoomLevel
+        return calculateScreenToGraphPosition(canvasMouseArea.mouseX, canvasMouseArea.mouseY)
+    }
+
+    function calculateScreenToGraphPosition(screenX, screenY) {
+        var graphPos = Qt.point(
+            (screenX - nodeCanvas.viewOffset.x) / nodeCanvas.zoomLevel,
+            (screenY - nodeCanvas.viewOffset.y) / nodeCanvas.zoomLevel
         )
+        screenToGraphPositionCalculated(screenX, screenY, graphPos)
+        return graphPos
     }
 
     function zoomIn() {
@@ -548,6 +572,7 @@ Rectangle {
         nodeCanvas.viewOffset = Qt.point(0, 0)
         connectionLayer.requestPaint()
         gridCanvas.requestPaint()
+        nodeCanvas.viewChanged()
     }
 
     function fitToView() {
@@ -578,6 +603,7 @@ Rectangle {
 
         connectionLayer.requestPaint()
         gridCanvas.requestPaint()
+        nodeCanvas.viewChanged()
     }
 
     function centerOnNode(node) {
@@ -591,6 +617,7 @@ Rectangle {
 
         connectionLayer.requestPaint()
         gridCanvas.requestPaint()
+        nodeCanvas.viewChanged()
     }
 
     function adjustViewOffsetAfterZoom(oldZoom) {
@@ -605,16 +632,19 @@ Rectangle {
 
         connectionLayer.requestPaint()
         gridCanvas.requestPaint()
+        nodeCanvas.viewChanged()
     }
 
     function autoLayout() {
-        if (nodeGraph && nodeGraph.autoLayout) {
+        if (nodeGraph && typeof nodeGraph.autoLayout === 'function') {
             nodeGraph.autoLayout()
             // Force repaint after layout
             Qt.callLater(function() {
                 connectionLayer.requestPaint()
                 gridCanvas.requestPaint()
             })
+        } else {
+            console.log("Auto layout not available")
         }
     }
 
@@ -625,9 +655,32 @@ Rectangle {
         nodeCanvas.isCreatingConnection = false
     }
 
+    function getNodeById(nodeId) {
+        if (!nodeGraph || !nodeGraph.nodes) return null
+        for (var i = 0; i < nodeGraph.nodes.length; i++) {
+            if (nodeGraph.nodes[i].nodeId === nodeId) {
+                return nodeGraph.nodes[i]
+            }
+        }
+        return null
+    }
+
+    function getConnectionCount(node) {
+        if (!node || !nodeGraph || !nodeGraph.connections) return 0
+        var count = 0
+        for (var i = 0; i < nodeGraph.connections.length; i++) {
+            var connection = nodeGraph.connections[i]
+            if (connection.sourceNodeId === node.nodeId || connection.targetNodeId === node.nodeId) {
+                count++
+            }
+        }
+        return count
+    }
+
     Component.onCompleted: {
         gridCanvas.requestPaint()
         connectionLayer.requestPaint()
+        console.log("NodeCanvas initialized")
     }
 
     onNodeGraphChanged: {

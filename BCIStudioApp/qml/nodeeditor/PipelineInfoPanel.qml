@@ -20,6 +20,8 @@ Rectangle {
     property real memoryUsage: 0.0
     property int warningCount: 0
     property int errorCount: 0
+    property var theme: ({})
+
 
     signal pipelineValidationRequested()
     signal pipelineAnalysisRequested()

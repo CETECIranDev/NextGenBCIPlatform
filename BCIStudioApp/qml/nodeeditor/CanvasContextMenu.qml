@@ -17,6 +17,7 @@ Popup {
     property var canvas: null
     property point clickPos: Qt.point(0, 0)
     property var nodeRegistry: null
+    property var theme: ({})
 
     signal pasteNodes()
     signal selectAll()

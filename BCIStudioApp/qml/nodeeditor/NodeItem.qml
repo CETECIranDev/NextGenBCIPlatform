@@ -13,6 +13,7 @@ Rectangle {
     radius: 12
     opacity: isDragging ? 0.8 : 1.0
 
+    property var theme: ({})
     property var nodeModel
     property bool isSelected: false
     property bool isDragging: false

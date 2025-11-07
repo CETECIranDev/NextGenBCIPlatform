@@ -1,4 +1,3 @@
-// RegionalQualityItem.qml
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -110,13 +109,11 @@ Rectangle {
 
         onClicked: {
             regionalItem.clicked(region)
-
-            // Click feedback
             clickAnimation.start()
         }
     }
 
-    // Click feedback animation
+    // Click feedback animation - تصحیح شده
     SequentialAnimation {
         id: clickAnimation
         NumberAnimation {
@@ -132,6 +129,7 @@ Rectangle {
             from: 0.95
             to: 1.0
             duration: 100
+            easing.type: Easing.OutBack
         }
     }
 
@@ -257,33 +255,59 @@ Rectangle {
         loops: 2
 
         ParallelAnimation {
-            ColorAnimation {  // تغییر از NumberAnimation به ColorAnimation
-                target: regionalItem
-                property: "border.color"
-                to: "#FF4081"
-                duration: 300
-            }
             NumberAnimation {
                 target: regionalItem
                 property: "border.width"
                 to: 3
                 duration: 300
             }
+            ColorAnimation {
+                target: regionalItem
+                property: "border.color"
+                to: "#FF4081"
+                duration: 300
+            }
         }
 
         ParallelAnimation {
-            ColorAnimation {  // تغییر از NumberAnimation به ColorAnimation
-                target: regionalItem
-                property: "border.color"
-                to: theme.border
-                duration: 300
-            }
             NumberAnimation {
                 target: regionalItem
                 property: "border.width"
                 to: 1
                 duration: 300
             }
+            ColorAnimation {
+                target: regionalItem
+                property: "border.color"
+                to: theme.border
+                duration: 300
+            }
+        }
+    }
+
+    // Entrance animation
+    Component.onCompleted: {
+        opacity = 0
+        scale = 0.8
+        entranceAnimation.start()
+    }
+
+    SequentialAnimation {
+        id: entranceAnimation
+        NumberAnimation {
+            target: regionalItem
+            property: "opacity"
+            from: 0
+            to: 1
+            duration: 400
+        }
+        NumberAnimation {
+            target: regionalItem
+            property: "scale"
+            from: 0.8
+            to: 1.0
+            duration: 400
+            easing.type: Easing.OutBack
         }
     }
 }

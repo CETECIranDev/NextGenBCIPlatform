@@ -20,7 +20,7 @@ DashboardCard {
 
     //contentHeight: 200
 
-    GridLayout {
+    content : GridLayout {
         anchors.fill: parent
         columns: 2
         rowSpacing: 15

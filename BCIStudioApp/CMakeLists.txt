@@ -29,6 +29,7 @@ qt_add_executable(BCIStudioApp
     main.cpp
     src/AppController.cpp
     src/MainWindow.cpp
+    qml/dashboard/CognitiveGauge_copy.qml
 )
 
 # لینک کتابخانه‌ها
@@ -133,6 +134,29 @@ qt_add_resources(BCIStudioApp "qml_resources"
 
         qml/dashboard/CognitiveTrendAnalysis.qml
         qml/dashboard/AdvancedCognitiveMetricsCard.qml
+        qml/dashboard/DashboardWidgetLoader.qml
+        qml/dashboard/EmptyDashboardState.qml
+        qml/dashboard/LiveMetricPill.qml
+        qml/dashboard/WidgetConfigPanel.qml
+        qml/dashboard/DraggableWidget.qml
+        qml/dashboard/QualityDistributionItem.qml
+        qml/dashboard/AdvancedHeadMap.qml
+        qml/dashboard/WidgetListItem.qml
+        qml/dashboard/SuccessToast.qml
+        qml/dashboard/CategoryTab.qml
+        qml/dashboard/WidgetCard.qml
+        qml/dashboard/EmptyState.qml
+        qml/dashboard/PrimaryButton.qml
+        qml/dashboard/SecondaryButton.qml
+        qml/dashboard/QualityMetric.qml
+        qml/dashboard/MapControlButton.qml
+        qml/dashboard/QualityDistributionPill.qml
+        qml/dashboard/RegionalQualityCompact.qml
+        qml/dashboard/MapControlButton.qml
+
+
+
+
 
 
 
@@ -155,6 +179,22 @@ qt_add_resources(BCIStudioApp "qml_resources"
         qml/dashboard/RegionalQualityItem.qml
         qml/dashboard/AdvancedMetricItem.qml
         qml/dashboard/LogEntryDelegate.qml
+
+        qml/dashboard/AdvancedCognitiveMetricsCard.qml
+        qml/dashboard/AdvancedHeadMap.qml
+        qml/dashboard/AdvancedMetricItem.qml
+        qml/dashboard/QualityMetricCompact.qml
+        qml/dashboard/QualityDistributionBar.qml
+        qml/dashboard/MapControlButtonEnterprise.qml
+        qml/dashboard/RegionalQualityBar.qml
+        qml/dashboard/ElectrodeItemEnterprise.qml
+
+        qml/dashboard/ActionButton.qml
+        qml/dashboard/CommandChip.qml
+        qml/dashboard/MetricTile.qml
+        qml/dashboard/StatusPill.qml
+        qml/dashboard/MetricGauge.qml
+        qml/dashboard/LiveSignalCard.qml
 
 
 
@@ -179,6 +219,13 @@ qt_add_resources(BCIStudioApp "qml_resources"
         qml/dashboard/ClassificationResultsCard.qml
         qml/dashboard/PipelineStatusCard.qml
         qml/dashboard/QuickControlsCard.qml
+
+        qml/dashboard/PerformanceMetricsCard.qml
+        qml/dashboard/CognitiveStateCard.qml
+        qml/dashboard/RealTimeSpectrumCard.qml
+        qml/dashboard/PieChart.qml
+        qml/dashboard/CognitiveMetric.qml
+
 
 
 

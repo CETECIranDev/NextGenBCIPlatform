@@ -2,7 +2,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects  // برای Qt 6
+import Qt5Compat.GraphicalEffects
 
 Item {
     id: electrodeItem
@@ -15,6 +15,7 @@ Item {
     property bool showInterpolation: true
     property real impedance: 0
     property string region: ""
+    property bool showLabel: true  // Property جدید برای کنترل نمایش label
 
     // Signals
     signal clicked(string channel, real quality)
@@ -23,16 +24,16 @@ Item {
     // Positioning
     x: (position.x - 0.5) * mapSize * 1.8 + mapSize/2 - width/2
     y: (position.y - 0.5) * mapSize * 1.8 + mapSize/2 - height/2
-    width: 32
-    height: 32
+    width: 28
+    height: 28
 
     // Quality indicator with glow effect
     Rectangle {
         id: electrodeCircle
         anchors.centerIn: parent
-        width: 26
-        height: 26
-        radius: 13
+        width: 22
+        height: 22
+        radius: 11
         color: getQualityColor(quality)
         border.color: quality >= 60 ? "white" : theme.textPrimary
         border.width: quality >= 80 ? 3 : quality >= 60 ? 2 : 1
@@ -58,7 +59,7 @@ Item {
         visible: quality >= 70
     }
 
-    // Channel label
+    // Channel label - با کنترل showLabel
     Text {
         id: channelLabel
         anchors.centerIn: parent
@@ -66,6 +67,7 @@ Item {
         color: quality >= 40 ? "white" : theme.textPrimary
         font.bold: true
         font.pixelSize: quality >= 60 ? 10 : 9
+        visible: showLabel  // کنترل نمایش با property جدید
     }
 
     // Quality percentage (shown on hover)
@@ -141,8 +143,6 @@ Item {
 
         onClicked: {
             electrodeItem.clicked(channel, quality)
-
-            // Click feedback animation
             clickAnimation.start()
         }
     }
@@ -240,6 +240,14 @@ Item {
                     font.bold: true;
                     font.pixelSize: 10
                 }
+
+                Text { text: "Label:"; color: theme.textSecondary; font.pixelSize: 10 }
+                Text {
+                    text: showLabel ? "Visible" : "Hidden";
+                    color: showLabel ? "#4CAF50" : "#FF9800";
+                    font.bold: true;
+                    font.pixelSize: 10
+                }
             }
         }
     }
@@ -254,11 +262,11 @@ Item {
     }
 
     function getImpedanceColor(impedance) {
-        if (impedance <= 5) return "#4CAF50"    // Excellent
-        if (impedance <= 10) return "#8BC34A"   // Good
-        if (impedance <= 20) return "#FFC107"   // Acceptable
-        if (impedance <= 50) return "#FF9800"   // Poor
-        return "#F44336"                        // Bad
+        if (impedance <= 5) return "#4CAF50"
+        if (impedance <= 10) return "#8BC34A"
+        if (impedance <= 20) return "#FFC107"
+        if (impedance <= 50) return "#FF9800"
+        return "#F44336"
     }
 
     function getQualityDescription(quality) {
@@ -276,12 +284,20 @@ Item {
 
     function setQuality(newQuality) {
         quality = Math.max(0, Math.min(100, newQuality))
-        // Update glow radius based on new quality
         electrodeGlow.radius = quality >= 90 ? 12 : quality >= 80 ? 8 : 4
     }
 
     function setImpedance(newImpedance) {
         impedance = Math.max(0, newImpedance)
+    }
+
+    // تابع جدید برای کنترل نمایش label
+    function showChannelLabel(show) {
+        showLabel = show
+    }
+
+    function toggleLabel() {
+        showLabel = !showLabel
     }
 
     // Highlight animation
@@ -324,5 +340,10 @@ Item {
     onQualityChanged: {
         electrodeGlow.radius = quality >= 90 ? 12 : quality >= 80 ? 8 : 4
         electrodeGlow.visible = quality >= 70
+    }
+
+    // رفتار هنگام تغییر showLabel
+    onShowLabelChanged: {
+        console.log("Electrode", channel, "label visibility:", showLabel ? "Visible" : "Hidden")
     }
 }

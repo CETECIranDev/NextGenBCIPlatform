@@ -48,6 +48,18 @@ Rectangle {
             font.pixelSize: 16
             anchors.horizontalCenter: parent.horizontalCenter
         }
+        Text {
+            text: "Powered By CETEC : Center Of Excellence in Technologies"
+            color: appTheme.textSecondary
+            font.pixelSize: 16
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+        Text {
+            text: "www.cetec.ir"
+            color: appTheme.textSecondary
+            font.pixelSize: 16
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
 
         // Loading progress
         Rectangle {

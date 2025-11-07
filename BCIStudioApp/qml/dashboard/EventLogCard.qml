@@ -43,7 +43,7 @@ DashboardCard {
     signal entryCopied(var entry)
     signal entryMarkedAsRead(var entry)
 
-    ColumnLayout {
+    content : ColumnLayout {
         anchors.fill: parent
         spacing: 12
 

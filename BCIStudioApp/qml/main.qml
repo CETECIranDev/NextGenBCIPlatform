@@ -333,7 +333,8 @@ ApplicationWindow {
                 // سوئیچ تم در هدر
                 ThemeSwitcher {
                     anchors.right: parent.right
-                    anchors.rightMargin: 20
+                    anchors.rightMargin: 20                    
+                    anchors.top: parent.top
                     anchors.verticalCenter: parent.verticalCenter
                     size: 36
                 }

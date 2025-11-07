@@ -110,6 +110,9 @@ qt_add_resources(BCIStudioApp "qml_resources"
         qml/common/ControlPanel.qml
         qml/common/ControlSection.qml
         qml/common/StatusIndicator.qml
+        qml/common/GlassCard.qml
+        qml/common/IconButton.qml
+        qml/common/FlatButton.qml
 
         qml/models/DashboardModel.qml
 
